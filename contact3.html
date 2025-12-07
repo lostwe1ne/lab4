@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакти Макса Ферстаппена (Адаптивна версія)</title>
+    <link rel="stylesheet" href="css2/styles.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <h1 class="header-title">Макс Ферстаппен</h1>
+
+            <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
+            <label for="nav-toggle" class="burger" aria-label="Відкрити меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+
+            <nav id="main-nav" class="main-nav-css">
+                <ul>
+                    <li><a href="index2.html#hero-content">Головна</a></li>
+                    <li><a href="index2.html#biography">Біографія</a></li>
+                    <li><a href="index2.html#achievements">Досягнення</a></li>
+                    <li><a href="index2.html#results">Результати</a></li>
+                    <li><a href="index2.html#gallery">Галерея</a></li>
+                    <li><a href="contact2.html" class="active">Контакти</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="contact">
+            <h1>Зворотній зв'язок</h1>
+            
+            <form action="#" method="POST" class="contact-form">
+                
+                <div class="left-column">
+                    <p>Заповніть форму, щоб надіслати повідомлення фан-клубу Макса Ферстаппена. Ми цінуємо ваш інтерес!</p>
+                    
+                    <label for="name">Ваше ім'я:</label>
+                    <input type="text" id="name" name="name" required placeholder="Ім'я та Прізвище">
+
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" required placeholder="Ваш @ email">
+
+                    <label for="topic">Тема повідомлення:</label>
+                    <select id="topic" name="topic">
+                        <option value="fan">Фан-повідомлення</option>
+                        <option value="suggestion">Пропозиція для сайту</option>
+                        <option value="press">Прес-запит</option>
+                    </select>
+                </div>
+
+                <div class="right-column">
+                    <label for="message">Повідомлення:</label>
+                    <textarea id="message" name="message" required placeholder="Ваше повідомлення..."></textarea>
+                    
+                    <button type="submit" class="submit-button">Надіслати повідомлення</button>
+                    
+                    <div class="social-icons-wrapper">
+                        <a href="#" class="social-icon-link" aria-label="Instagram"><img src="images2/insta.jpg" alt="Instagram"></a>
+                        <a href="#" class="social-icon-link" aria-label="Twitter"><img src="images2/tw.jpg" alt="Twitter"></a>
+                        <a href="#" class="social-icon-link" aria-label="Facebook"><img src="images2/fb.jpg" alt="Facebook"></a>
+                    </div>
+                </div>
+
+            </form>
+        </section>
+        <hr>
+
+        <section id="registration">
+            <h1>Реєстрація у фан-клубі</h1>
+            <p>Хочете отримувати ексклюзивні новини? <a href="#registration-modal">Зареєструйтесь!</a></p>
+
+            <div id="registration-modal" class="modal">
+                <div class="modal-content">
+                    <h2>Приєднатися до Red Bull Fan-Club</h2>
+                    <a href="#close" class="modal-close" aria-label="Закрити модальне вікно">&times;</a>
+
+                    <form action="#" method="GET" class="registration-form-grid">
+                        
+                        <div>
+                            <label for="reg-name">Ім'я:</label>
+                            <input type="text" id="reg-name" required>
+                        </div>
+                        <div>
+                            <label for="reg-surname">Прізвище:</label>
+                            <input type="text" id="reg-surname" required>
+                        </div>
+                        <div>
+                            <label for="reg-email">Email:</label>
+                            <input type="email" id="reg-email" required>
+                        </div>
+                        <div>
+                            <label for="reg-country">Країна:</label>
+                            <select id="reg-country" required>
+                                <option>Україна</option>
+                                <option>Інша</option>
+                            </select>
+                        </div>
+
+                        <div style="grid-column: 1 / -1; text-align: center;">
+                            <label for="terms" style="display: inline-block; font-weight: normal; color: var(--muted);">
+                                <input type="checkbox" id="terms" required> Я погоджуюсь з умовами
+                            </label>
+                        </div>
+
+                        <button type="submit" class="submit-button" style="grid-column: 1 / -1;">Зареєструватися</button>
+
+                    </form>
+                    
+                    <div class="image-stack">
+                        <div class="stack-img img-red"></div>
+                        <div class="stack-img img-blue"></div>
+                        <div class="stack-img img-orange"></div>
+                        <span class="stack-text">#MaxVerstappen</span>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Фан-сайт Макса Ферстаппена</p>
+        <p><small>Виключно для некомерційного використання</small></p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест з JavaScript та DOM (Лабораторна 4)</title>
+    <link rel="stylesheet" href="css3/styles.css"> 
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <h1 class="header-title">ЛАБОРАТОРНА №4: ТЕСТ З JAVASCRIPT</h1>
+
+            <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
+            <label for="nav-toggle" class="burger" aria-label="Відкрити меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+
+            <nav id="main-nav" class="main-nav-css">
+                <ul>
+                    <li><a href="індекс3.html#hero-content">Головна</a></li> 
+                    <li><a href="quiz3.html" class="active">Тест (ЛР4)</a></li> 
+                    <li><a href="контакт3.html">Контакти</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="start-screen">
+            <h1>Початок Тесту</h1>
+            <p class="user-instruction">Будь ласка, введіть Ваші дані та оберіть рівень складності, щоб розпочати.</p>
+            <form id="start-form" class="contact-form">
+                
+                <div class="left-column">
+                    <label for="name-input">Ваше ім'я та прізвище:</label>
+                    <input type="text" id="name-input" required minlength="4" placeholder="Іван Петров">
+                    
+                    <label for="group-input">Ваша група:</label>
+                    <input type="text" id="group-input" required pattern="[A-Za-z0-9-]+[A-Za-z0-9]+" placeholder="ІП-11">
+                </div>
+
+                <div class="right-column">
+                    <label for="level-select">Рівень складності:</label>
+                    <select id="level-select">
+                        <option value="beginner">Початковий (10 питань)</option>
+                        <option value="intermediate">Середній (15 питань)</option>
+                        <option value="advanced">Складний (20 питань)</option>
+                    </select>
+                    
+                    <button type="submit" class="submit-button">Почати Тест</button>
+                    <p id="error-message" style="color: var(--accent); margin-top: 10px;"></p>
+                </div>
+            </form>
+        </section>
+
+        <section id="quiz-screen" class="hidden">
+            <h1 id="quiz-title">Тест: <span id="quiz-level-display"></span></h1>
+            <p id="user-info-display" class="user-instruction"></p>
+            
+            <div id="questions-container">
+                </div>
+            
+            <button id="submit-quiz" class="submit-button" disabled>Завершити Тест та Показати Результати</button>
+        </section>
+        
+        <section id="results-screen" class="hidden">
+            <h1>Результати Тесту</h1>
+            <p id="final-score" class="results-text"></p>
+            <p class="results-details">Ваші результати збережено у Local Storage.</p>
+            <button id="restart-quiz" class="submit-button">Спробувати ще раз</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Лабораторна робота №4</p>
+        <p><small>Розроблено [Ваше ПІБ] | Група [Ваша Група]</small></p>
+    </footer>
+
+    <script src="script.js"></script> 
+</body>
+</html>

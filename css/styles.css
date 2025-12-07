@@ -1,0 +1,497 @@
+/* styles.css — ОНОВЛЕНИЙ Mobile-first для ЛР3 */
+
+/* Шрифти */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto+Mono:wght@500&display=swap');
+
+:root {
+  /* Палітра Red Bull / Verstappen */
+  --black: #000000;
+  --dark: #0A0A0A;
+  --bg: #151515;
+  --white: #FFFFFF;
+  --muted: #E0E0E0;
+  --accent: #FF0000;     /* Основний червоний акцент */
+  --accent-dark: #CC0000;
+  --blue: #0096FF;       /* Додатковий синій акцент */
+  --mark: #FFEB3B;
+  --container-max: 1200px;
+  --gap: 16px;
+  --radius: 6px;
+  --shadow-strong: 0 0 40px rgba(0,0,0,0.7);
+}
+
+/* ====== Base / Mobile-first (Базові стилі для вузьких екранів) ====== */
+* { box-sizing: border-box }
+html, body { height: 100% }
+
+body {
+  margin: 0;
+  font-family: 'Oswald', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, var(--black) 0%, var(--bg) 100%);
+  color: var(--muted);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+/* Page container */
+main {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 16px auto;
+  padding: 20px;
+  background-color: var(--dark);
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  box-shadow: var(--shadow-strong);
+  min-height: calc(100vh - 140px);
+}
+
+/* Links */
+a { color: var(--muted); text-decoration: none; transition: color .18s ease }
+a:hover, a:focus { color: var(--accent); outline: none }
+
+/* Headings */
+h1 { font-size: 1.6rem; color: var(--muted); border-left: 6px solid var(--accent); padding-left: 12px; margin: 0 0 16px }
+h2 { font-size: 1.15rem; color: var(--accent); border-bottom: 2px solid rgba(224,224,224,.06); display: inline-block; padding-bottom: 6px; margin: 16px 0 }
+h3 { font-size: 1rem; color: var(--muted); margin: 12px 0 }
+
+/* Utility */
+.clearfix::after { content: ""; display: block; clear: both }
+hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 20px 0 }
+
+
+/* ====== Header (FLEX 1) + CSS Burger Menu (Mobile-first) ====== */
+header { background: var(--black); position: sticky; top: 0; z-index: 1200; box-shadow: 0 4px 14px rgba(255,0,0,0.12) }
+
+/* header inner flex container */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Розтягуємо між H1 і Бургером */
+  gap: 12px;
+  padding: 12px 16px;
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  color: var(--muted);
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Burger Button */
+.burger {
+  width: 42px; height: 36px; display: flex; flex-direction: column; justify-content: center; gap: 6px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1201; /* Поверх меню */
+}
+
+.burger span {
+  display: block; height: 3px; width: 100%; border-radius: 3px; background: var(--accent); transition: transform .25s, opacity .25s;
+}
+
+/* Nav - mobile: offcanvas panel */
+.main-nav-css {
+  position: fixed;
+  right: -100%;
+  top: 0;
+  height: 100%;
+  width: 260px;
+  background: linear-gradient(180deg, var(--black), rgba(10,10,10,0.95));
+  box-shadow: -6px 0 30px rgba(0,0,0,0.7);
+  transition: right .28s ease;
+  padding-top: 72px;
+  z-index: 1100;
+}
+
+.main-nav-css ul { list-style: none; padding: 0 18px; margin: 0; display: flex; flex-direction: column; gap: 8px }
+.main-nav-css a {
+  display: block; padding: 12px 10px; border-radius: 6px; color: var(--muted);
+}
+.main-nav-css a.active { background: rgba(255,0,0,0.08); color: var(--accent) }
+
+/* CSS-Burger Hack Logic: коли checkbox :checked, відкриваємо меню */
+.nav-toggle:checked ~ .main-nav-css { right: 0 }
+
+/* Анімація Бургера в Х */
+.nav-toggle:checked ~ .burger span:nth-child(1) { transform: translateY(9px) rotate(45deg) }
+.nav-toggle:checked ~ .burger span:nth-child(2) { opacity: 0 }
+.nav-toggle:checked ~ .burger span:nth-child(3) { transform: translateY(-9px) rotate(-45deg) }
+
+
+/* ====== Hero ====== */
+.hero { text-align: center; padding: 28px 8px 36px }
+.hero h2 { font-size: 1.1rem; margin-bottom: 12px }
+.hero-image { 
+    width: 100%; 
+    max-width: 720px; 
+    height: auto; 
+    border-radius: 6px; 
+    display: block; 
+    margin: 10px auto; 
+    box-shadow: 0 0 40px rgba(255,0,0,0.12); 
+    border: 4px solid var(--accent) 
+}
+
+/* ====== Biography / Адаптив Float-зображень (Mobile-first: no float) ====== */
+.bio-section { padding: 8px 0; }
+
+/* На мобілці float-блоки займають 100% ширини і центруються */
+.adaptive-float-wrapper {
+    width: 100%;
+    overflow: hidden; /* Щоб clearfix не був потрібний на мобілці */
+    margin: 16px 0;
+}
+
+.float-left-img, .float-right-img {
+  width: 100%; display: block; margin: 12px auto; border-radius: 4px; overflow: hidden;
+  border: 3px solid rgba(255,0,0,0.14); background: var(--dark);
+}
+.float-left-img img, .float-right-img img { display: block; width: 100%; height: auto; object-fit: cover }
+.float-left-img figcaption, .float-right-img figcaption { padding: 8px; text-align: center; }
+
+
+/* ====== Table responsiveness (Прокрутка) ====== */
+.table-scroll-wrapper {
+  width: 100%;
+  display: block;
+  overflow-x: auto; /* Дозволяє горизонтальну прокрутку */
+  -webkit-overflow-scrolling: touch;
+  margin: 12px 0;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+table {
+    width: 600px; /* Примусово задаємо ширину, більшу за мобілку */
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+table caption { text-align: left; margin-bottom: 8px; color: var(--muted) }
+table th, table td {
+  padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--muted); text-align: left
+}
+table th { background: var(--accent); color: var(--white); font-weight: 600 }
+.champion-row { font-weight: 700; background: rgba(255,0,0,0.12) }
+
+
+/* ====== Photo gallery (GRID 1) ====== */
+.photo-gallery {
+  display: grid;
+  /* Адаптивна сітка: 1 колонка на мобілці, потім auto-fit */
+  grid-template-columns: 1fr; 
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.gallery-item { 
+    background: var(--black); border-radius: 8px; overflow: hidden; border: 2px solid rgba(255,0,0,0.12); 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5); transition: transform .22s, box-shadow .22s 
+}
+.gallery-item img { width: 100%; height: 190px; object-fit: cover; display: block }
+.gallery-item p { padding: 10px; background: rgba(0,0,0,0.5); color: var(--white); font-weight: 500; text-align: center }
+.gallery-item:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(255,0,0,0.08) }
+
+
+/* ====== Contact form (FLEX 2) ====== */
+.contact-form {
+  display: flex;
+  flex-direction: column; /* mobile: stacked (одна колонка) */
+  gap: 14px;
+  background: #2f2f2f;
+  padding: 18px;
+  border-top: 4px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+  color: var(--muted);
+}
+
+.contact-form label { display: block; margin-bottom: 6px; color: var(--accent); font-weight: 600 }
+.contact-form input, .contact-form select, .contact-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--dark);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--muted);
+  border-radius: 6px;
+  font-family: inherit;
+}
+.contact-form textarea { min-height: 140px; resize: vertical }
+.submit-button {
+  background: var(--accent);
+  color: var(--white);
+  padding: 10px 16px;
+  border: none;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .18s;
+  width: 100%; /* На мобілці кнопка на всю ширину */
+}
+.submit-button:hover { background: var(--accent-dark) }
+
+/* social icons wrapper (FLEX 3) */
+.social-icons-wrapper { 
+    display: flex; 
+    justify-content: center; 
+    gap: 18px; 
+    margin: 18px auto 0; /* Відступ внизу форми */
+}
+.social-icon-link { 
+    width: 50px; height: 50px; display: block; border-radius: 50%; overflow: hidden; 
+    border: 3px solid var(--accent); box-shadow: 0 6px 16px rgba(255,0,0,0.12); transition: transform .18s, box-shadow .18s 
+}
+.social-icon-link img { width: 100%; height: 100%; object-fit: cover; display: block }
+.social-icon-link:hover { transform: scale(1.08); border-color: var(--blue); box-shadow: 0 12px 30px rgba(0,150,255,0.18) }
+
+
+/* Реєстраційна форма (GRID 2 - у модальному вікні) */
+.registration-form-grid { 
+    display: grid; 
+    gap: 12px; 
+    grid-template-columns: 1fr; /* мобілка: 1 колонка */
+    align-items: start 
+}
+
+
+/* Modal window (чистий CSS) */
+.modal {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.96); visibility: hidden; opacity: 0; pointer-events: none; transition: opacity .28s, visibility .28s;
+  z-index: 2000;
+}
+.modal:target { visibility: visible; opacity: 1; pointer-events: auto } /* :target-хак */
+.modal-content { 
+    width: calc(100% - 40px); max-width: 500px; padding: 26px; background: var(--dark); 
+    border-radius: 8px; box-shadow: var(--shadow-strong); position: relative; 
+}
+.modal-close { position: absolute; top: 10px; right: 18px; font-size: 2rem; color: var(--accent); line-height: 1; }
+
+/* Image Stack (positioned) */
+.image-stack { width: 220px; height: 160px; margin: 28px auto; position: relative; transition: all .4s ease }
+/* Стилі для stack-img, transition і hover залишено як були */
+
+
+/* Footer */
+footer { 
+    text-align: center; padding: 14px 18px; background: var(--dark); 
+    border-top: 3px solid var(--accent); color: var(--muted) 
+}
+footer p { margin: 4px 0 }
+
+
+/* ====== MEDIA QUERIES (Адаптивність) ====== */
+
+/* 1. Планшет (Tablet) та більше (600px+) */
+@media (min-width: 600px) {
+
+  /* Галерея: 2 колонки */
+  .photo-gallery {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  /* Контактна форма: 2 колонки (Flex -> row) */
+  .contact-form { flex-direction: row; gap: 20px; align-items: flex-start }
+  .contact-form .left-column { flex: 1.2 }
+  .contact-form .right-column { flex: 2; display: flex; flex-direction: column }
+  .submit-button { width: auto; align-self: flex-start; } /* Кнопка не на всю ширину */
+  
+  /* Реєстраційна форма: 2 колонки (Grid) */
+  .registration-form-grid { grid-template-columns: 1fr 1fr }
+
+  .social-icon-link { width: 60px; height: 60px; }
+}
+
+/* 2. Десктоп (Desktop) та більше (768px+) */
+@media (min-width: 768px) {
+  
+  /* Навігація стає горизонтальною (ховати бургер) */
+  .burger { display: none }
+  .main-nav-css { 
+    position: static; width: auto; height: auto; background: transparent; padding: 0; 
+    box-shadow: none; right: auto; 
+  }
+  .main-nav-css ul { 
+      flex-direction: row; gap: 18px; align-items: center; 
+      /* Це - FLEX 4 (горизонтальне меню) */
+  }
+  .main-nav-css a { padding: 8px 10px }
+  
+  /* Float-зображення тепер float-яться */
+  .adaptive-float-wrapper { overflow: visible; margin: 0 }
+  .float-left-img { 
+      float: left; width: 220px; margin: 0 16px 12px 0; 
+      border: 3px solid rgba(255,0,0,0.18) 
+  }
+  .float-right-img { 
+      float: right; width: 140px; margin: 0 0 12px 16px; 
+      border: 3px solid rgba(0,150,255,0.18) 
+  }
+  
+  /* Галерея: більші мінімальні розміри */
+  .photo-gallery { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) }
+  
+  /* Таблиця займає всю ширину обгортки (безпека) */
+  table { width: 100% }
+}
+
+/* 3. Широкий Десктоп (Large Desktop) та більше (1200px+) */
+@media (min-width: 1200px) {
+  main { padding: 30px; }
+  h1 { font-size: 2rem }
+  
+  /* Галерея: 3-4 колонки */
+  .photo-gallery { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) }
+  
+  /* Більші зображення float */
+  .float-left-img { width: 260px; }
+  .float-right-img { width: 180px; }
+}
+
+/* ========================================================= */
+/* ДОДАТКОВІ СТИЛІ ДЛЯ ЛАБОРАТОРНОЇ №4: Тест */
+/* ========================================================= */
+
+/* 1. Стилі для прихованих секцій та загального оформлення */
+.hidden {
+    display: none !important;
+}
+.user-instruction {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    opacity: 0.8;
+}
+
+/* Адаптація форми старту тесту */
+#start-form {
+    background: #2f2f2f;
+    border-top-color: var(--blue); /* Змінимо акцент для форм на сторінці тесту */
+}
+
+/* 2. Стилі для питань та відповідей */
+.question {
+    background: var(--dark); /* Темний фон для блоку питання */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: var(--radius);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.3s;
+}
+.question:hover {
+    border-color: var(--blue);
+}
+
+.question h3 {
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin: 0 0 15px 0;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 8px;
+}
+
+.options-group label {
+    display: flex; /* Для вирівнювання Radio/Checkbox */
+    align-items: center;
+    margin: 12px 0;
+    padding: 8px;
+    cursor: pointer;
+    background: #1e1e1e;
+    border-radius: 4px;
+    transition: background 0.2s;
+    color: var(--muted);
+    font-weight: 300;
+}
+
+.options-group label:hover {
+    background: #2a2a2a;
+    color: var(--accent);
+}
+
+/* Стилізація Radio/Checkbox */
+.options-group input[type="radio"], 
+.options-group input[type="checkbox"] {
+    margin-right: 12px;
+    accent-color: var(--accent); /* Зміна кольору галочки/точки */
+    width: 18px;
+    height: 18px;
+}
+
+/* 3. Стилі для Drag & Drop */
+.dnd-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px dashed rgba(255, 0, 0, 0.3);
+    border-radius: var(--radius);
+    min-height: 60px;
+}
+
+.draggable-item {
+    background: var(--blue);
+    color: var(--white);
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: grab;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.droppable-area {
+    flex: 1;
+    min-height: 100px;
+    background: #252525;
+    border: 2px dashed var(--muted);
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    color: var(--muted);
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.droppable-area span {
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-bottom: 5px;
+}
+
+.droppable-area.drag-over {
+    border-color: var(--accent);
+    background: #3a3a3a;
+}
+.droppable-area.filled {
+     border-style: solid;
+     border-color: var(--blue);
+}
+
+/* 4. Стилі для результатів */
+.results-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 20px 0;
+}
+
+.results-details {
+    color: var(--blue);
+}
+
+/* Адаптивність для Drag & Drop контейнерів */
+@media (max-width: 600px) {
+    .droppable-area {
+        min-width: 100%;
+    }
+}

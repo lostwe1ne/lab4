@@ -29,6 +29,7 @@ class RadioQuestion extends Question {
     }
 
     checkAnswer(userAnswerIndex) {
+        // Оскільки options перемішуються, перевіряємо по тексту варіанта, а не по індексу
         const selectedOptionText = this.options[userAnswerIndex];
         return this.correct === selectedOptionText;
     }
@@ -50,7 +51,7 @@ class CheckboxQuestion extends Question {
         }
 
         const sortedUser = userAnswerTexts.sort();
-        const sortedCorrect = this.correct.sort();
+        const sortedCorrect = this.correct.sort(); // Сортуємо, щоб порівнювати масиви
 
         return sortedUser.every((value, index) => value === sortedCorrect[index]);
     }
@@ -63,6 +64,7 @@ class DragDropQuestion extends Question {
         this.type = 'dragdrop';
     }
 
+    /** userAnswer: { "Елемент A": "Зона 1", "Елемент B": "Зона 2" } */
     checkAnswer(userAnswer) {
         let correctCount = 0;
         let totalItems = Object.keys(this.correct).length;
@@ -77,7 +79,7 @@ class DragDropQuestion extends Question {
         }
         return correctCount === totalItems;
     }
-    // D&D не перемішуємо
+    // D&D не перемішуємо, але draggableItems все одно використовуються для рендерингу
     shuffleOptions() { } 
 }
 
@@ -130,14 +132,17 @@ class Quiz {
         this.maxScore = this.questions.reduce((sum, q) => sum + q.points, 0);
     }
     
-    /** Перемішуємо питання всього тесту та його варіанти */
+    /** Перемішуємо питання всього тесту та його варіанти (статичний метод) */
     static selectRandomQuestions(bank, count) {
         const shuffled = bank.sort(() => 0.5 - Math.random());
         // Обмеження до count
         const selected = shuffled.slice(0, count);
         // Використовуємо Array.forEach
         selected.forEach(q => {
-             q.shuffleOptions(); 
+             // Перемішуємо варіанти лише для питань, які мають їх
+             if (q.options && q.options.length > 0) {
+                 q.shuffleOptions(); 
+             }
         });
         return selected;
     }
@@ -203,6 +208,8 @@ class Quiz {
             } else if (question.type === 'dragdrop') {
                 const userAnswer = {}; 
                 const dropAreas = questionElement.querySelectorAll('.droppable-area');
+                
+                // Збираємо відповіді користувача
                 dropAreas.forEach(area => {
                     const draggableItem = area.querySelector('.draggable-item');
                     if (draggableItem) {
@@ -423,7 +430,10 @@ function renderQuiz(quiz) {
 
         } else if (question.type === 'dragdrop') {
             let draggableItemsHtml = '';
-            question.options.forEach(itemText => {
+            // Перемішуємо елементи для перетягування у вихідному контейнері
+            const shuffledDraggableItems = [...question.options].sort(() => 0.5 - Math.random());
+            
+            shuffledDraggableItems.forEach(itemText => {
                 draggableItemsHtml += `
                     <div class="draggable-item" draggable="true">${itemText}</div>
                 `;
@@ -461,6 +471,7 @@ function renderQuiz(quiz) {
         container.appendChild(questionDiv);
     });
     
+    // Ініціалізуємо D&D після додавання всіх елементів
     initializeDragAndDrop();
     document.getElementById('submit-quiz').disabled = false;
 }
@@ -500,12 +511,17 @@ function initializeDragAndDrop() {
     document.querySelectorAll('.draggable-item').forEach(item => {
         item.addEventListener('dragstart', (e) => {
             draggedItem = e.target;
+            // Зберігаємо текст, хоча в цьому випадку він не використовується для перевірки
             e.dataTransfer.setData('text/plain', e.target.textContent.trim()); 
             e.target.style.opacity = '0.5';
         });
 
         item.addEventListener('dragend', (e) => {
             e.target.style.opacity = '1';
+            // Очищуємо draggedItem, якщо він не був скинутий
+            if (draggedItem && !draggedItem.parentNode.classList.contains('droppable-area')) {
+                 draggedItem = null;
+            }
         });
     });
 
@@ -514,7 +530,10 @@ function initializeDragAndDrop() {
         // Делегування: dragover - дозволяє скидання
         zone.addEventListener('dragover', (e) => {
             e.preventDefault(); 
-            e.currentTarget.classList.add('drag-over');
+            // Дозволяємо перетягування лише якщо зона порожня
+            if (!e.currentTarget.querySelector('.draggable-item')) {
+                e.currentTarget.classList.add('drag-over');
+            }
         });
 
         zone.addEventListener('dragleave', (e) => {
@@ -529,9 +548,9 @@ function initializeDragAndDrop() {
             if (e.currentTarget.querySelector('.draggable-item')) {
                 return;
             }
-
+            
             // Якщо draggedItem був у іншій droppable-area, видаляємо клас 'filled'
-            if (draggedItem.parentNode && draggedItem.parentNode.classList.contains('droppable-area')) {
+            if (draggedItem && draggedItem.parentNode && draggedItem.parentNode.classList.contains('droppable-area')) {
                  draggedItem.parentNode.classList.remove('filled');
             }
             
@@ -542,14 +561,19 @@ function initializeDragAndDrop() {
             draggedItem = null; 
         });
         
-        // Додатковий drop-обробник для повернення елемента у вихідний контейнер
-        const questionIndex = zone.closest('.question').dataset.index;
-        const sourceContainer = document.getElementById(`draggable-source-${questionIndex}`);
-
+    });
+    
+    // 3. Додатковий drop-обробник для повернення елемента у вихідний контейнер
+    document.querySelectorAll('.dnd-container:not(.droppable-targets)').forEach(sourceContainer => {
+        sourceContainer.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Дозволяємо скидання
+        });
+        
         sourceContainer.addEventListener('drop', (e) => {
             e.preventDefault();
-            if (draggedItem && draggedItem.closest('.question').dataset.index === questionIndex) {
-                // Видаляємо клас .filled у старої droppable-area
+            
+            if (draggedItem && draggedItem.closest('.question').dataset.index === sourceContainer.closest('.question').dataset.index) {
+                // Видаляємо клас .filled у старої droppable-area, якщо він був у ній
                 if (draggedItem.parentNode.classList.contains('droppable-area')) {
                     draggedItem.parentNode.classList.remove('filled');
                 }
@@ -573,12 +597,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerGroup = document.getElementById('header-group');
 
     // Налаштування теми та ПІБ/групи за замовчуванням
-    headerName.textContent = document.getElementById('name-input').value.trim() || 'Шум Дмитро';
-    headerGroup.textContent = document.getElementById('group-input').value.trim() || 'ТР-43';
+    const defaultName = document.getElementById('name-input').value.trim() || 'Шум Дмитро';
+    const defaultGroup = document.getElementById('group-input').value.trim() || 'ТР-43';
+    headerName.textContent = defaultName;
+    headerGroup.textContent = defaultGroup;
     
     // 1. Обробка форми початку тесту (з валідацією)
     startForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Обробка submit форми
+        **event.preventDefault();** // 🔥 Ключовий крок: Скасовуємо стандартну поведінку submit форми
         
         // Валідація форми
         if (!startForm.checkValidity()) {
@@ -601,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('user-info-display').textContent = 
             `Студент: ${userName} | Група: ${userGroup}`;
         document.getElementById('quiz-level-display').textContent = 
-            document.getElementById('level-select').options[document.getElementById('level-select').selectedIndex].text.split('(')[0];
+            document.getElementById('level-select').options[document.getElementById('level-select').selectedIndex].text.split('(')[0].trim();
         
         // Ініціалізація тесту
         const selectedQuestions = Quiz.selectRandomQuestions(bankData.bank, bankData.count);

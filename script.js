@@ -240,9 +240,9 @@ const intermediateQuestionsBank = [
 // Мапа для вибору банку - БЕЗ ЗМІН
 const questionBanks = {
     // Збільшено count, щоб було більше питань F1
-    beginner: { bank: beginnerQuestionsBank, count: 6 }, 
-    intermediate: { bank: intermediateQuestionsBank, count: 6 },
-    advanced: { bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), count: 12 }, 
+    beginner: { bank: beginnerQuestionsBank, count: 10 }, 
+    intermediate: { bank: intermediateQuestionsBank, count: 15 },
+    advanced: { bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), count: 20 }, 
 };
 
 
@@ -476,4 +476,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+
 

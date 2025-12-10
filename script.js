@@ -1,72 +1,68 @@
 // 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz)
-// Базовий клас для всіх питань
+
+/** Базовий клас для всіх питань */
 class Question {
     constructor(text, options, correct, points = 1) {
         this.text = text;
         this.options = options; 
-        this.correct = correct; // ТЕКСТ або МАСИВ ТЕКСТІВ для Radio/Checkbox
+        this.correct = correct; // ТЕКСТ або МАСИВ ТЕКСТІВ
         this.points = points;
     }
 
-    // Метод для перемішування варіантів відповідей 
+    /** Метод для перемішування варіантів відповідей (використовується map, деструктуризація) */
     shuffleOptions() {
-        for (let i = this.options.length - 1; i > 0; i--) {
+        // Створюємо новий масив для перемішування, щоб уникнути зміни початкового банку
+        const shuffled = [...this.options];
+        for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [this.options[i], this.options[j]] = [this.options[j], this.options[i]];
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Деструктуризація для обміну
         }
+        this.options = shuffled;
     }
 }
 
-// 1.1. Питання з однією правильною відповіддю (Radio buttons)
+/** 1.1. Питання з однією правильною відповіддю (Radio buttons) */
 class RadioQuestion extends Question {
-    // correctValue - це ТЕКСТ правильної відповіді
-    constructor(text, options, correctValue, points) {
+    constructor(text, options, correctValue, points = 1) {
         super(text, options, correctValue, points); 
         this.type = 'radio';
     }
 
     checkAnswer(userAnswerIndex) {
-        // Порівнюємо ТЕКСТ обраного варіанту з правильним ТЕКСТОМ
         const selectedOptionText = this.options[userAnswerIndex];
         return this.correct === selectedOptionText;
     }
 }
 
-// 1.2. Питання з множинним вибором (Checkbox)
+/** 1.2. Питання з множинним вибором (Checkbox) */
 class CheckboxQuestion extends Question {
-    // correctValues - це МАСИВ ТЕКСТІВ правильних відповідей
-    constructor(text, options, correctValues, points) {
+    constructor(text, options, correctValues, points = 2) {
         super(text, options, correctValues, points); 
         this.type = 'checkbox';
     }
 
+    /** Використовує Array.map, Array.sort, Array.every */
     checkAnswer(userAnswerIndices) {
-        // 1. Отримуємо тексти, які обрав користувач
         const userAnswerTexts = userAnswerIndices.map(index => this.options[index]);
         
-        // 2. Перевіряємо, чи кількість обраних відповідей збігається з кількістю правильних
         if (userAnswerTexts.length !== this.correct.length) {
             return false;
         }
 
-        // 3. Сортуємо обидва масиви (тексти користувача та правильні тексти) та порівнюємо
         const sortedUser = userAnswerTexts.sort();
         const sortedCorrect = this.correct.sort();
 
-        // Порівнюємо елемент за елементом
         return sortedUser.every((value, index) => value === sortedCorrect[index]);
     }
 }
 
-// 1.3. Питання Drag & Drop 
+/** 1.3. Питання Drag & Drop */
 class DragDropQuestion extends Question {
-    constructor(text, draggableItems, correctMapping, points) {
-        // correctMapping: об'єкт { 'Текст елемента': 'Назва зони' }
+    constructor(text, draggableItems, correctMapping, points = 3) {
         super(text, draggableItems, correctMapping, points); 
         this.type = 'dragdrop';
     }
 
-    // Перевіряє відповідь Drag & Drop. userAnswer - об'єкт { 'Текст елемента': 'Назва зони' }
     checkAnswer(userAnswer) {
         let correctCount = 0;
         let totalItems = Object.keys(this.correct).length;
@@ -85,36 +81,76 @@ class DragDropQuestion extends Question {
     shuffleOptions() { } 
 }
 
+/** 1.4. Питання з випадаючим списком (Select) */
+class SelectQuestion extends Question {
+    constructor(text, options, correctValue, points = 1) {
+        super(text, options, correctValue, points); 
+        this.type = 'select';
+    }
 
-// Клас для управління тестом 
+    checkAnswer(userAnswerText) {
+        return this.correct === userAnswerText;
+    }
+}
+
+/** 1.5. Завдання з написанням коду/виправленням/пропуском (Text/Textarea) */
+class CodeQuestion extends Question {
+    // subType: 'text', 'fill-in-blank', 'debugging'
+    constructor(text, subType, correctValue, points = 5) {
+        super(text, [], correctValue, points); 
+        this.type = 'code';
+        this.subType = subType;
+    }
+
+    checkAnswer(userAnswer) {
+        const userAnswerNormalized = userAnswer.trim().toLowerCase();
+        
+        if (this.subType === 'text' || this.subType === 'fill-in-blank') {
+            // Для простих відповідей/пропусків: точне співпадіння
+            return userAnswerNormalized === this.correct.trim().toLowerCase();
+        } else if (this.subType === 'debugging') {
+            // Для виправлення помилок: перевіряємо, чи є в коді ключові виправлені частини
+            // Використовуємо Array.every
+            const correctParts = Array.isArray(this.correct) ? this.correct : [this.correct];
+            return correctParts.every(part => userAnswerNormalized.includes(part.toLowerCase()));
+        }
+        return false;
+    }
+}
+
+
+/** Клас для управління тестом (використовує Array.reduce) */
 class Quiz {
     constructor(questions, name, group) {
         this.name = name;
         this.group = group;
         this.questions = questions; 
         this.score = 0;
+        // Використовуємо Array.reduce для підрахунку максимального балу
         this.maxScore = this.questions.reduce((sum, q) => sum + q.points, 0);
     }
     
-    // Перемішуємо питання всього тесту та його варіанти 
+    /** Перемішуємо питання всього тесту та його варіанти */
     static selectRandomQuestions(bank, count) {
         const shuffled = bank.sort(() => 0.5 - Math.random());
         // Обмеження до count
         const selected = shuffled.slice(0, count);
+        // Використовуємо Array.forEach
         selected.forEach(q => {
              q.shuffleOptions(); 
         });
         return selected;
     }
 
-    // Перевірити всі відповіді та підрахувати бали
+    /** Перевірити всі відповіді та підрахувати бали */
     calculateScore() {
         this.score = 0;
         const container = document.getElementById('questions-container');
 
         this.questions.forEach((question, index) => {
             const questionElement = container.querySelector(`.question[data-index="${index}"]`);
-
+            
+            // RADIO
             if (question.type === 'radio') {
                 const checkedRadio = questionElement.querySelector(`input[name="q${index}"]:checked`);
                 if (checkedRadio) {
@@ -123,17 +159,49 @@ class Quiz {
                         this.score += question.points;
                     }
                 }
+            
+            // CHECKBOX
             } else if (question.type === 'checkbox') {
                 const checkedBoxes = questionElement.querySelectorAll(`input[name="q${index}"]:checked`);
                 if (checkedBoxes.length > 0) {
+                    // Використовуємо Array.from та Array.map
                     const userAnswerIndices = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
                     if (question.checkAnswer(userAnswerIndices)) {
                         this.score += question.points;
                     }
                 }
+
+            // SELECT
+            } else if (question.type === 'select') {
+                const selectElement = questionElement.querySelector(`.select-answer`);
+                if (selectElement && selectElement.value) {
+                    const userAnswer = selectElement.value;
+                    if (question.checkAnswer(userAnswer)) {
+                        this.score += question.points;
+                    }
+                }
+            
+            // CODE (Text, Fill-in-Blank, Debugging)
+            } else if (question.type === 'code') {
+                let inputElement;
+                if (question.subType === 'fill-in-blank') {
+                    inputElement = questionElement.querySelector(`.fill-in-blank-input`);
+                } else if (question.subType === 'text') {
+                    inputElement = questionElement.querySelector(`.code-input`);
+                } else if (question.subType === 'debugging') {
+                    inputElement = questionElement.querySelector(`.code-textarea`);
+                }
+
+                if (inputElement && inputElement.value.trim().length > 0) {
+                    const userAnswer = inputElement.value;
+                    if (question.checkAnswer(userAnswer)) {
+                        this.score += question.points;
+                    }
+                }
+            
+            // DRAG & DROP
             } else if (question.type === 'dragdrop') {
                 const userAnswer = {}; 
-                
                 const dropAreas = questionElement.querySelectorAll('.droppable-area');
                 dropAreas.forEach(area => {
                     const draggableItem = area.querySelector('.draggable-item');
@@ -154,156 +222,151 @@ class Quiz {
 }
 
 
-// 2. БАНК ПИТАНЬ - 10 початкових та 10 середніх (разом 20)
+// 2. БАНК ПИТАНЬ (min 15 на рівень)
+
 const beginnerQuestionsBank = [
-    // 10 ПИТАНЬ ПОЧАТКОВОГО РІВНЯ
-    new RadioQuestion(
-        "Яка команда є поточною (2025) командою Макса Ферстаппена?",
-        ["Ferrari", "Red Bull Racing", "Mercedes", "Aston Martin"],
-        "Red Bull Racing"
-    ),
-    new RadioQuestion(
-        "У якому році Макс Ферстаппен вперше став Чемпіоном Світу F1?",
-        ["2020", "2021", "2022", "2019"],
-        "2021"
-    ),
-    new RadioQuestion(
-        "Який гоночний номер використовує Макс Ферстаппен у Формулі-1?",
-        ["33", "1", "10", "44"],
-        "1"
-    ),
-    new RadioQuestion(
-        "Який тип шин зазвичай використовується для їзди по мокрій трасі?",
-        ["Soft", "Medium", "Hard", "Wet"],
-        "Wet"
-    ),
-    new RadioQuestion(
-        "Який елемент автомобіля F1 відкривається за допомогою DRS?",
-        ["Переднє крило", "Заднє крило", "Бортові понтони", "Дифузор"],
-        "Заднє крило"
-    ),
-    new RadioQuestion(
-        "Скільки пілотів стартує у гонці Формули-1 (при повній сітці)?",
-        ["18", "20", "22", "24"],
-        "20"
-    ),
-    new RadioQuestion(
-        "Який гонщик є рекордсменом за кількістю Чемпіонатів Світу F1?",
-        ["Міхаель Шумахер", "Льюїс Гамільтон", "Айртон Сенна", "Себастьян Феттель"],
-        "Льюїс Гамільтон"
-    ),
-    new RadioQuestion(
-        "Який прапор показують, коли на трасі є серйозна небезпека і виїжджає машина безпеки?",
-        ["Червоний", "Синій", "Жовтий", "Зелений"],
-        "Жовтий"
-    ),
-    new RadioQuestion(
-        "Як називається зона, де команди змінюють колеса під час гонки?",
-        ["Гараж", "Бокси", "Піт-лейн", "Стійло"],
-        "Піт-лейн"
-    ),
-    new RadioQuestion(
-        "Яке місто приймає знаменитий Гран-прі Монако?",
-        ["Ніцца", "Монте-Карло", "Канни", "Париж"],
-        "Монте-Карло"
-    ),
+    // Radio & Checkbox (Основи, Змінні, Типи)
+    new RadioQuestion("Що використовується для оголошення змінної, яка може бути переприсвоєна?", ["const", "var", "let", "global"], "let", 1),
+    new RadioQuestion("Який оператор використовується для строгого порівняння (значення та тип)?", ["==", "===", "!=", "!=="], "===", 1),
+    new SelectQuestion("Який тип даних поверне `typeof 42`?", ["string", "number", "boolean", "undefined"], "number", 1),
+    new CheckboxQuestion("Які типи даних є примітивними в JavaScript? (оберіть дві)", ["Object", "String", "Array", "Boolean", "Symbol"], ["String", "Boolean"], 2),
+    new CodeQuestion("Яке ключове слово пропущено для оголошення змінної, яка не може бути переприсвоєна?\n[Пропуск] PI = 3.14;", 'fill-in-blank', 'const', 1),
+    new RadioQuestion("Що виведе `console.log(10 + '5')`?", ["15", "105", "Error", "NaN"], "105", 1),
+    new SelectQuestion("Як оголошується стрілкова функція без параметрів?", ["function() {}", "() => {}", "arrow function()", "func => {}"], "() => {}", 1),
+    new RadioQuestion("Що таке 'Hoisting'?", ["Створення нового об'єкта", "Підйом оголошень до початку області видимості", "Закриття функції", "Деструктуризація"], "Підйом оголошень до початку області видимості", 1),
+    new CheckboxQuestion("Які цикли існують у JavaScript? (оберіть дві)", ["for", "while", "until", "loop"], ["for", "while"], 2),
+    new RadioQuestion("Що означає оператор `!`?", ["Логічне І", "Логічне АБО", "Логічне НІ (заперечення)", "Оператор присвоєння"], "Логічне НІ (заперечення)", 1),
+    new CodeQuestion("Яка умова потрібна для того, щоб код виконав `console.log('OK')`?\nconst x = 5;\nif ([Пропуск]) { console.log('OK'); }", 'fill-in-blank', 'x === 5', 1),
+    new RadioQuestion("Як називається область видимості, коли функція має доступ до зовнішніх змінних?", ["Global scope", "Local scope", "Closure", "Block scope"], "Closure", 1),
+    new RadioQuestion("Який метод додає елемент в кінець масиву?", ["unshift()", "pop()", "push()", "shift()"], "push()", 1),
+    new SelectQuestion("Яку команду слід використовувати для створення незмінного оголошення змінної?", ["let name", "var name", "const name", "def name"], "const name", 1),
+    new CheckboxQuestion("Які зарезервовані слова використовуються для роботи з класами? (оберіть дві)", ["function", "class", "constructor", "object"], ["class", "constructor"], 2)
 ];
 
 const intermediateQuestionsBank = [
-    // 10 ПИТАНЬ СЕРЕДНЬОГО/СКЛАДНОГО РІВНЯ
-    new CheckboxQuestion(
-        "Які з цих подій відбуваються під час Гран-прі F1 (оберіть дві правильні)?",
-        ["Вільна практика", "Супербоул", "Кваліфікація", "Спринтерська гонка"],
-        ["Вільна практика", "Кваліфікація"],
-        2
-    ),
-    new CheckboxQuestion(
-        "Які з цих команд є постачальниками двигунів для F1 (оберіть дві правильні)?",
-        ["Mercedes", "Lamborghini", "Ferrari", "Toyota"],
-        ["Mercedes", "Ferrari"],
-        2
-    ),
+    // Checkbox & DragDrop (Масиви, Функції, Callback, Об'єкти)
+    new CheckboxQuestion("Які методи масиву JS **не** змінюють вихідний масив? (оберіть дві)", ["map", "splice", "filter", "sort"], ["map", "filter"], 2),
     new DragDropQuestion(
-        "З'єднайте пілота з його національністю (Балів: 3)",
-        ["Макс Ферстаппен", "Серхіо Перес", "Льюїс Гамільтон"],
+        "З'єднайте методи масиву з їхнім призначенням (Балів: 3)",
+        ["map()", "filter()", "reduce()"],
         { 
-            "Макс Ферстаппен": "Нідерланди", 
-            "Серхіо Перес": "Мексика", 
-            "Льюїс Гамільтон": "Велика Британія"
+            "map()": "Створює новий масив", 
+            "filter()": "Створює масив з елементів, що пройшли тест", 
+            "reduce()": "Зводить масив до одного значення"
         },
         3
     ),
-    new RadioQuestion(
-        "Скільки кіл зазвичай проходить гонка F1, якщо не враховувати особливі випадки?",
-        ["До 305 км", "До 250 км", "Мінімум 400 км"],
-        "До 305 км",
-        1
-    ),
-    new DragDropQuestion(
-        "Перетягніть команду до її логотипу (уявно) (Балів: 3)",
-        ["McLaren", "Alpine", "Visa Cash App RB F1 Team"],
-        { 
-            "McLaren": "Помаранчевий/Чорний", 
-            "Alpine": "Синій/Рожевий", 
-            "Visa Cash App RB F1 Team": "Синій/Червоний"
-        },
-        3
-    ),
-    new CheckboxQuestion(
-        "Які з цих трас приймали Гран-прі F1 (оберіть три)?",
-        ["Монца", "Нюрбургринг", "Ле-Ман", "Спа-Франкоршам", "Індіанаполіс"],
-        ["Монца", "Нюрбургринг", "Спа-Франкоршам"],
-        3
-    ),
-    new CheckboxQuestion(
-        "Які частини автомобіля F1 мають вирішальне значення для генерації притискної сили (downforce)? (Оберіть три правильні)",
-        ["Переднє крило", "Бічні дзеркала", "Заднє крило", "Вихлопні труби", "Дифузор"],
-        ["Переднє крило", "Заднє крило", "Дифузор"], 
-        3
-    ),
-    new DragDropQuestion(
-        "З'єднайте назву відомого повороту з трасою (Балів: 3)",
-        ["Eau Rouge", "Tamburello", "Maggotts/Becketts"],
-        { 
-            "Eau Rouge": "Спа-Франкоршам", 
-            "Tamburello": "Імола", 
-            "Maggotts/Becketts": "Сільверстоун"
-        },
-        3
-    ),
-    new RadioQuestion(
-        "Що означає абревіатура MGU-H у силових установках F1?",
-        ["Motor Gear Unit – Hydrolics", "Mechanical Grip Unit – Handling", "Motor Generator Unit – Heat", "Magnetic Gear Unit – Hybrid"],
-        "Motor Generator Unit – Heat",
-        1
-    ),
-    new CheckboxQuestion(
-        "Хто з цих пілотів був напарником Макса Ферстаппена в Red Bull Racing? (Оберіть дві правильні)",
-        ["Серхіо Перес", "Карлос Сайнс-молодший", "Даніель Ріккардо", "П'єр Гаслі"],
-        ["Серхіо Перес", "Даніель Ріккардо"],
+    new CodeQuestion(
+        "Який метод масиву дозволяє пройтись по кожному елементу масиву і виконати для нього функцію зворотного виклику?\narr.[Пропуск]((item) => { ... });", 
+        'fill-in-blank', 
+        'forEach', 
         2
+    ),
+    new SelectQuestion("Що таке **деструктуризація** об'єкта?", ["Створення нового об'єкта", "Виклик методів об'єкта", "Розпакування властивостей об'єкта в окремі змінні", "Злиття об'єктів"], "Розпакування властивостей об'єкта в окремі змінні", 1),
+    new RadioQuestion("Як отримати перший елемент масиву `arr` за допомогою деструктуризації?", ["[first] = arr", "arr[0]", "{first} = arr", "const first = arr"], "[first] = arr", 1),
+    new DragDropQuestion(
+        "З'єднайте синтаксис з типом функції (Балів: 2)",
+        ["function foo() {}", "const foo = () => {}"],
+        { 
+            "function foo() {}": "Звичайна функція", 
+            "const foo = () => {}": "Стрілкова функція"
+        },
+        2
+    ),
+    new CheckboxQuestion("Які з цих методів використовуються для ітерації по об'єктах? (оберіть дві)", ["Object.keys()", "Object.values()", "Array.map()", "Array.filter()"], ["Object.keys()", "Object.values()"], 2),
+    new RadioQuestion("Що таке **callback** функція?", ["Функція, яка викликає іншу функцію", "Функція, передана в іншу функцію як аргумент, для виклику пізніше", "Функція, оголошена всередині класу", "Функція-генератор"], "Функція, передана в іншу функцію як аргумент, для виклику пізніше", 1),
+    new RadioQuestion("Яке ключове слово використовується для створення наслідування класів?", ["extends", "inherits", "implements", "uses"], "extends", 1),
+    new CodeQuestion(
+        "Використовуючи деструктуризацію, отримайте властивість 'city' з об'єкта 'user':\nconst user = { name: 'Alice', city: 'London' };\n[Пропуск] = user;", 
+        'fill-in-blank', 
+        '{ city }', 
+        3
+    ),
+    new SelectQuestion("Що робить метод `Array.find()`?", ["Повертає новий масив", "Повертає перший елемент, що відповідає умові", "Повертає індекс елемента", "Повертає `true` або `false`"], "Повертає перший елемент, що відповідає умові", 1),
+    new CheckboxQuestion("Які методи DOM використовуються для зміни стилів? (оберіть дві)", ["element.classList.add()", "element.style.color = 'red'", "element.id = 'new-id'", "element.innerHTML = 'text'"], ["element.classList.add()", "element.style.color = 'red'"], 2),
+    new RadioQuestion("Який метод викликається, коли функція викликає саму себе?", ["Callback", "Higher-order", "Closure", "Recursion"], "Recursion", 1),
+    new RadioQuestion("Який тип функції повинен мати клас ES6+?", ["function", "method", "procedure", "constructor"], "constructor", 1),
+    new CodeQuestion(
+        "Який правильний синтаксис для використання методу `map` для масиву `[1, 2]`? (Повертає `[2, 4]`)\nconst arr = [1, 2];\nconst newArr = arr.map([Пропуск]);", 
+        'fill-in-blank', 
+        '(x) => x * 2', 
+        3
     ),
 ];
 
-// 3. Мапа для вибору банку - ОНОВЛЕНО count до 10 ВЕЗДЕ
+const advancedQuestionsBank = [
+    // Code, DragDrop & Debugging (Класи, DOM, Форми, D&D, Складні оператори)
+    new CodeQuestion(
+        "Виправте помилку в коді: Клас 'Car' повинен мати статичний метод 'getMaxSpeed'.\nclass Car { constructor(model) { this.model = model; } getMaxSpeed() { return 200; } }", 
+        'debugging', 
+        ['static', 'getMaxSpeed'], 
+        5
+    ),
+    new DragDropQuestion(
+        "З'єднайте події DOM з їхнім призначенням (Балів: 3)",
+        ["click", "addEventListener", "Delegation"],
+        { 
+            "click": "Подія натискання миші", 
+            "addEventListener": "Прикріплення обробника події", 
+            "Delegation": "Обробка подій на батьківському елементі"
+        },
+        3
+    ),
+    new CheckboxQuestion("Які методи використовуються для роботи з DOM? (оберіть дві)", ["document.querySelector()", "Node.appendChild()", "Array.push()", "Math.random()"], ["document.querySelector()", "Node.appendChild()"], 2),
+    new SelectQuestion("Який метод класу викликається автоматично при створенні нового об'єкта?", ["init()", "start()", "constructor()", "new()"], "constructor()", 1),
+    new RadioQuestion("Яким чином можна отримати значення текстового поля форми з ID 'myInput'?", ["myInput.text", "myInput.value", "myInput.innerHTML", "myInput.content"], "myInput.value", 1),
+    new CheckboxQuestion("Які з цих JS-методів використовуються для роботи з класами CSS в DOM-елементі? (оберіть дві)", ["classList.add()", "classList.remove()", "style.color", "setAttribute()"], ["classList.add()", "classList.remove()"], 2),
+    new CodeQuestion(
+        "Який метод використовується для додавання обробника події до елемента DOM?\nelement.[Пропуск]('click', handler);", 
+        'fill-in-blank', 
+        'addEventListener', 
+        2
+    ),
+    new RadioQuestion("Що відбувається, коли `event.preventDefault()` викликається у обробнику форми `submit`?", ["Форма надсилає дані асинхронно", "Перевіряється валідація даних", "Скасовується стандартна дія надсилання форми", "Запускається функція `onload`"], "Скасовується стандартна дія надсилання форми", 1),
+    new DragDropQuestion(
+        "З'єднайте атрибути Drag & Drop API з їхнім призначенням (Балів: 2)",
+        ["draggable", "dataTransfer"],
+        { 
+            "draggable": "Вказує, чи можна перетягувати елемент", 
+            "dataTransfer": "Зберігає дані під час перетягування"
+        },
+        2
+    ),
+    new RadioQuestion("Як зберегти об'єкт `user` у `localStorage`?", ["localStorage.setItem('user', user)", "localStorage.set('user', user)", "localStorage.setItem('user', JSON.stringify(user))", "localStorage.save(user)"], "localStorage.setItem('user', JSON.stringify(user))", 1),
+    new SelectQuestion("Що таке 'Closure' (замикання)?", ["Блокування доступу до змінних", "Функція, що запам'ятовує зовнішнє середовище", "Приватний метод класу", "Подія DOM"], "Функція, що запам'ятовує зовнішнє середовище", 1),
+    new CodeQuestion(
+        "Виправте помилку: `const arr = [1, 2, 3]; const sum = arr.reduce(x, y => x + y, 0);`\nНапишіть правильний синтаксис функції зворотного виклику:", 
+        'debugging', 
+        ['(x, y) => x + y'], 
+        5
+    ),
+    new RadioQuestion("Який метод використовується для видалення елемента DOM?", ["element.delete()", "element.remove()", "element.detach()", "element.hide()"], "element.remove()", 1),
+    new CheckboxQuestion("Які події є частиною Drag & Drop API? (оберіть дві)", ["dragstart", "dragover", "mousedown", "keydown"], ["dragstart", "dragover"], 2),
+    new CodeQuestion(
+        "Що поверне вираз: `const result = [1, 2, 3].filter(n => n > 1).length;`? (Напишіть тільки число)", 
+        'fill-in-blank', 
+        '2', 
+        1
+    ),
+];
+
+
+// 3. Мапа для вибору банку
 const questionBanks = {
-    // Beginner: бере 10 з 10 початкових
     beginner: { bank: beginnerQuestionsBank, count: 10 }, 
-    // Intermediate: бере 10 з 10 середніх
     intermediate: { bank: intermediateQuestionsBank, count: 10 },
-    // Advanced: бере 10 ВИПАДКОВИХ з 20 (10 початкових + 10 середніх)
     advanced: { 
-        bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), 
+        bank: advancedQuestionsBank, 
         count: 10 
     }, 
 };
 
 
-// 4. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ - БЕЗ ЗМІН
+// 4. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ
 
 let currentQuiz = null; 
 
-// 4.1 Функція для відображення питань 
+/** Функція для відображення питань */
 function renderQuiz(quiz) {
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
@@ -320,7 +383,7 @@ function renderQuiz(quiz) {
             
             question.options.forEach((option, optionIndex) => {
                 optionsHtml += `
-                    <label>
+                    <label class="option-label">
                         <input type="${inputType}" name="q${index}" value="${optionIndex}">
                         ${option}
                     </label>
@@ -328,9 +391,37 @@ function renderQuiz(quiz) {
             });
             optionsHtml = `<div class="options-group">${optionsHtml}</div>`;
         
-        } else if (question.type === 'dragdrop') {
+        } else if (question.type === 'select') {
+            let selectOptions = question.options.map(option => 
+                `<option value="${option}">${option}</option>`
+            ).join('');
             
-            // 1. Елементи для перетягування (Draggables)
+            optionsHtml = `
+                <select name="q${index}" class="select-answer">
+                    <option value="" disabled selected>Оберіть відповідь</option>
+                    ${selectOptions}
+                </select>
+            `;
+            
+        } else if (question.type === 'code') {
+            if (question.subType === 'fill-in-blank') {
+                const parts = question.text.split('[Пропуск]');
+                optionsHtml = `
+                    <p class="code-display">
+                        <code>${parts[0].trim()}</code>
+                        <input type="text" name="q${index}" class="fill-in-blank-input" placeholder="Введіть пропуск">
+                        <code>${parts[1] ? parts[1].trim() : ''}</code>
+                    </p>
+                `;
+            } else if (question.subType === 'debugging' || question.subType === 'text') {
+                optionsHtml = `<div class="code-area">
+                    <p class="instruction">${question.subType === 'debugging' ? 'Виправте помилки у коді:' : 'Напишіть код:'}</p>
+                    ${question.subType === 'debugging' ? `<pre><code>${question.text}</code></pre>` : ''}
+                    <textarea name="q${index}" class="code-textarea" rows="4" placeholder="${question.subType === 'debugging' ? 'Напишіть виправлений код тут' : 'Введіть відповідь'}"></textarea>
+                </div>`;
+            }
+
+        } else if (question.type === 'dragdrop') {
             let draggableItemsHtml = '';
             question.options.forEach(itemText => {
                 draggableItemsHtml += `
@@ -338,9 +429,9 @@ function renderQuiz(quiz) {
                 `;
             });
             
-            // 2. Зони для скидання (Droppables)
             let droppableAreasHtml = '';
-            const slotNames = new Set(Object.values(question.correct)); 
+            // Використовуємо Set для унікальних зон
+            const slotNames = Array.from(new Set(Object.values(question.correct))).sort(); 
             
             slotNames.forEach(slotName => {
                 droppableAreasHtml += `
@@ -352,30 +443,29 @@ function renderQuiz(quiz) {
             
             optionsHtml = `
                 <h4>Елементи для перетягування (Source):</h4>
-                <div class="dnd-container" id="draggable-source-${index}">
+                <div class="dnd-container" id="draggable-source-${index}" ondragover="event.preventDefault()">
                     ${draggableItemsHtml}
                 </div>
                 <h4>Зони для відповіді (Targets):</h4>
-                <div class="dnd-container" id="droppable-targets-${index}">
+                <div class="dnd-container droppable-targets" id="droppable-targets-${index}">
                     ${droppableAreasHtml}
                 </div>
             `;
         }
 
         questionDiv.innerHTML = `
-            <h3>${index + 1}. ${question.text} (Балів: ${question.points})</h3>
+            <h3>${index + 1}. ${question.text.split('\n')[0].replace('[Пропуск]', '...')} (Балів: ${question.points})</h3>
             ${optionsHtml}
         `;
         
         container.appendChild(questionDiv);
     });
     
-    // Ініціалізуємо Drag & Drop після додавання елементів
     initializeDragAndDrop();
     document.getElementById('submit-quiz').disabled = false;
 }
 
-//  4.2 Функція для відображення результатів 
+/** Функція для відображення результатів */
 function showResults(score) {
     document.getElementById('quiz-screen').classList.add('hidden');
     const resultsScreen = document.getElementById('results-screen');
@@ -385,7 +475,7 @@ function showResults(score) {
     const resultMessage = `Ваш результат: ${score} з ${currentQuiz.maxScore} балів (${percentage}%).`;
     document.getElementById('final-score').textContent = resultMessage;
     
-    // Збереження результатів у localStorage (Крок 12)
+    // Збереження результатів у localStorage
     const resultData = {
         name: currentQuiz.name,
         group: currentQuiz.group,
@@ -401,12 +491,12 @@ function showResults(score) {
 }
 
 
-// 5. ЛОГІКА DRAG & DROP API - БЕЗ ЗМІН
+// 5. ЛОГІКА DRAG & DROP API
 
 let draggedItem = null; // Глобальна змінна для елемента, що перетягується
 
 function initializeDragAndDrop() {
-    // 1. Обробка перетягуваних елементів
+    // 1. Обробка перетягуваних елементів (dragstart, dragend)
     document.querySelectorAll('.draggable-item').forEach(item => {
         item.addEventListener('dragstart', (e) => {
             draggedItem = e.target;
@@ -419,10 +509,11 @@ function initializeDragAndDrop() {
         });
     });
 
-    // 2. Обробка зон скидання
+    // 2. Обробка зон скидання (dragover, drop, dragleave)
     document.querySelectorAll('.droppable-area').forEach(zone => {
+        // Делегування: dragover - дозволяє скидання
         zone.addEventListener('dragover', (e) => {
-            e.preventDefault(); // Дозволяє скидання
+            e.preventDefault(); 
             e.currentTarget.classList.add('drag-over');
         });
 
@@ -434,7 +525,7 @@ function initializeDragAndDrop() {
             e.preventDefault();
             e.currentTarget.classList.remove('drag-over');
             
-            // Якщо зона вже містить елемент, ігноруємо
+            // Запобігаємо скиданню, якщо зона вже зайнята
             if (e.currentTarget.querySelector('.draggable-item')) {
                 return;
             }
@@ -451,11 +542,13 @@ function initializeDragAndDrop() {
             draggedItem = null; 
         });
         
-        // 3. Додатковий drop-обробник для повернення елемента у вихідний контейнер
-        const sourceContainer = document.getElementById(`draggable-source-${zone.closest('.question').dataset.index}`);
+        // Додатковий drop-обробник для повернення елемента у вихідний контейнер
+        const questionIndex = zone.closest('.question').dataset.index;
+        const sourceContainer = document.getElementById(`draggable-source-${questionIndex}`);
+
         sourceContainer.addEventListener('drop', (e) => {
             e.preventDefault();
-            if (draggedItem) {
+            if (draggedItem && draggedItem.closest('.question').dataset.index === questionIndex) {
                 // Видаляємо клас .filled у старої droppable-area
                 if (draggedItem.parentNode.classList.contains('droppable-area')) {
                     draggedItem.parentNode.classList.remove('filled');
@@ -464,23 +557,30 @@ function initializeDragAndDrop() {
                 draggedItem = null;
             }
         });
-        sourceContainer.addEventListener('dragover', (e) => { e.preventDefault() });
     });
 }
 
 
-// 6. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ - БЕЗ ЗМІН
+// 6. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ
 
 document.addEventListener('DOMContentLoaded', () => {
     const startForm = document.getElementById('start-form');
     const submitQuizButton = document.getElementById('submit-quiz');
     const restartQuizButton = document.getElementById('restart-quiz');
     
+    // Елементи Header
+    const headerName = document.getElementById('header-name');
+    const headerGroup = document.getElementById('header-group');
+
+    // Налаштування теми та ПІБ/групи за замовчуванням
+    headerName.textContent = document.getElementById('name-input').value.trim() || 'Шум Дмитро';
+    headerGroup.textContent = document.getElementById('group-input').value.trim() || 'ТР-43';
+    
     // 1. Обробка форми початку тесту (з валідацією)
     startForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        // Проста валідація
+        event.preventDefault(); // Обробка submit форми
+        
+        // Валідація форми
         if (!startForm.checkValidity()) {
              document.getElementById('error-message').textContent = "Будь ласка, заповніть коректно всі поля.";
              return;
@@ -493,6 +593,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedLevel = document.getElementById('level-select').value;
         
         const bankData = questionBanks[selectedLevel];
+        
+        // Оновлення HEADER та інформації на екрані тесту
+        headerName.textContent = userName;
+        headerGroup.textContent = userGroup;
         
         document.getElementById('user-info-display').textContent = 
             `Студент: ${userName} | Група: ${userGroup}`;
@@ -525,5 +629,4 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-form').reset();
     });
-
 });

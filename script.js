@@ -1,10 +1,10 @@
-// 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz) - БЕЗ ЗМІН
+// 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz)
 // Базовий клас для всіх питань (Крок 6)
 class Question {
     constructor(text, options, correct, points = 1) {
         this.text = text;
         this.options = options; 
-        this.correct = correct; 
+        this.correct = correct; // Тепер це ТЕКСТ або МАСИВ ТЕКСТІВ для Radio/Checkbox
         this.points = points;
     }
 
@@ -14,46 +14,52 @@ class Question {
             const j = Math.floor(Math.random() * (i + 1));
             [this.options[i], this.options[j]] = [this.options[j], this.options[i]];
         }
+        // УВАГА: Оскільки ми перевіряємо відповідь по ТЕКСТУ, нам не потрібно оновлювати this.correct тут!
     }
 }
 
 // 1.1. Питання з однією правильною відповіддю (Radio buttons)
 class RadioQuestion extends Question {
-    constructor(text, options, correctIndex, points) {
-        super(text, options, correctIndex, points);
+    // correctValue - це ТЕКСТ правильної відповіді, а не індекс!
+    constructor(text, options, correctValue, points) {
+        super(text, options, correctValue, points); // this.correct = текст відповіді
         this.type = 'radio';
     }
 
     checkAnswer(userAnswerIndex) {
-        // У F1-питаннях я використовую рядок для відповіді,
-        // щоб зробити код чистішим і уникнути плутанини з індексами.
-        // Ми порівнюємо, чи збігається текст правильної відповіді з текстом обраного варіанту (userAnswerIndex тут - індекс обраного варіанта)
-        // Для спрощення тестування:
-        // У RadioQuestion correct має бути ІНДЕКС правильної відповіді!
-        // Я коригую це нижче у банку питань для RadioQuestion.
-        return this.correct === userAnswerIndex;
+        // Тепер ми перевіряємо, чи текст за обраним індексом відповідає правильному тексту.
+        const selectedOptionText = this.options[userAnswerIndex];
+        return this.correct === selectedOptionText;
     }
 }
 
 // 1.2. Питання з множинним вибором (Checkbox)
 class CheckboxQuestion extends Question {
-    constructor(text, options, correctIndices, points) {
-        super(text, options, correctIndices, points); 
+    // correctValues - це МАСИВ ТЕКСТІВ правильних відповідей!
+    constructor(text, options, correctValues, points) {
+        super(text, options, correctValues, points); // this.correct = масив текстів
         this.type = 'checkbox';
     }
 
     checkAnswer(userAnswerIndices) {
-        if (userAnswerIndices.length !== this.correct.length) {
+        // 1. Отримуємо тексти, які обрав користувач
+        const userAnswerTexts = userAnswerIndices.map(index => this.options[index]);
+        
+        // 2. Перевіряємо, чи кількість обраних відповідей збігається з кількістю правильних
+        if (userAnswerTexts.length !== this.correct.length) {
             return false;
         }
-        const sortedUser = userAnswerIndices.sort((a, b) => a - b);
-        const sortedCorrect = this.correct.sort((a, b) => a - b);
 
+        // 3. Сортуємо обидва масиви (тексти користувача та правильні тексти) та порівнюємо
+        const sortedUser = userAnswerTexts.sort();
+        const sortedCorrect = this.correct.sort();
+
+        // Порівнюємо елемент за елементом
         return sortedUser.every((value, index) => value === sortedCorrect[index]);
     }
 }
 
-// 1.3. Питання Drag & Drop (Крок 6, 10)
+// 1.3. Питання Drag & Drop (Крок 6, 10) - БЕЗ ЗМІН
 class DragDropQuestion extends Question {
     constructor(text, draggableItems, correctMapping, points) {
         // correctMapping: об'єкт { 'Текст елемента': 'Назва зони' }
@@ -74,15 +80,14 @@ class DragDropQuestion extends Question {
                 correctCount++;
             }
         }
-        // Зарахуємо бал, якщо всі елементи розміщені правильно
         return correctCount === totalItems;
     }
-    // D&D не перемішуємо, бо це порушить логіку відповідності
+    // D&D не перемішуємо
     shuffleOptions() { } 
 }
 
 
-// Клас для управління тестом (Крок 7)
+// Клас для управління тестом (Крок 7) - БЕЗ ЗМІН
 class Quiz {
     constructor(questions, name, group) {
         this.name = name;
@@ -97,13 +102,12 @@ class Quiz {
         const shuffled = bank.sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, count);
         selected.forEach(q => {
-             // Викликаємо перемішування варіантів відповідей
              q.shuffleOptions(); 
         });
         return selected;
     }
 
-    // Перевірити всі відповіді та підрахувати бали (Крок 11)
+    // Перевірити всі відповіді та підрахувати бали (Крок 11) - БЕЗ ЗМІН ЛОГІКИ, ТІЛЬКИ ЧЕРЕЗ ВИКЛИК checkAnswer
     calculateScore() {
         this.score = 0;
         const container = document.getElementById('questions-container');
@@ -130,7 +134,6 @@ class Quiz {
             } else if (question.type === 'dragdrop') {
                 const userAnswer = {}; 
                 
-                // Збираємо відповіді для Drag & Drop
                 const dropAreas = questionElement.querySelectorAll('.droppable-area');
                 dropAreas.forEach(area => {
                     const draggableItem = area.querySelector('.draggable-item');
@@ -151,39 +154,38 @@ class Quiz {
 }
 
 
-// 2. БАНК ПИТАНЬ - ПОВНІСТЮ ЗМІНЕНО НА F1 (Крок 8)
-// *Зверніть увагу: правильна відповідь для RadioQuestion - це ІНДЕКС (0, 1, 2, 3), а не текст.
+// 2. БАНК ПИТАНЬ - ОНОВЛЕНО ДЛЯ ВИКОРИСТАННЯ ТЕКСТУ ВІДПОВІДІ
 const beginnerQuestionsBank = [
     // Питання про F1/Ферстаппена (Початковий Рівень)
     new RadioQuestion(
         "Яка команда є поточною (2025) командою Макса Ферстаппена?",
         ["Ferrari", "Red Bull Racing", "Mercedes", "Aston Martin"],
-        1 // Індекс правильної відповіді: "Red Bull Racing"
+        "Red Bull Racing" // ТЕКСТ замість індексу (було 1)
     ),
     new RadioQuestion(
         "У якому році Макс Ферстаппен вперше став Чемпіоном Світу F1?",
         ["2020", "2021", "2022", "2019"],
-        1 // Індекс правильної відповіді: "2021"
+        "2021" // ТЕКСТ замість індексу (було 1)
     ),
     new RadioQuestion(
         "Який гоночний номер використовує Макс Ферстаппен у Формулі-1?",
         ["33", "1", "10", "44"],
-        1 // Індекс правильної відповіді: "1" (як чинний чемпіон)
+        "1" // ТЕКСТ замість індексу (було 1)
     ),
     new RadioQuestion(
         "Який тип шин зазвичай використовується для їзди по мокрій трасі?",
         ["Soft", "Medium", "Hard", "Wet"],
-        3 // Індекс правильної відповіді: "Wet"
+        "Wet" // ТЕКСТ замість індексу (було 3)
     ),
     new RadioQuestion(
         "Який елемент автомобіля F1 відкривається за допомогою DRS?",
         ["Переднє крило", "Заднє крило", "Бортові понтони", "Дифузор"],
-        1 // Індекс правильної відповіді: "Заднє крило"
+        "Заднє крило" // ТЕКСТ замість індексу (було 1)
     ),
     new RadioQuestion(
         "Скільки пілотів стартує у гонці Формули-1 (при повній сітці)?",
         ["18", "20", "22", "24"],
-        1 // Індекс правильної відповіді: "20"
+        "20" // ТЕКСТ замість індексу (було 1)
     ),
 ];
 
@@ -192,13 +194,13 @@ const intermediateQuestionsBank = [
     new CheckboxQuestion(
         "Які з цих подій відбуваються під час Гран-прі F1 (оберіть дві правильні)?",
         ["Вільна практика", "Супербоул", "Кваліфікація", "Спринтерська гонка"],
-        [0, 2], // Індекси правильних відповідей: "Вільна практика", "Кваліфікація"
+        ["Вільна практика", "Кваліфікація"], // МАСИВ ТЕКСТІВ замість масиву індексів (було [0, 2])
         2
     ),
     new CheckboxQuestion(
         "Які з цих команд є постачальниками двигунів для F1 (оберіть дві правильні)?",
         ["Mercedes", "Lamborghini", "Ferrari", "Toyota"],
-        [0, 2], // Індекси правильних відповідей: "Mercedes", "Ferrari"
+        ["Mercedes", "Ferrari"], // МАСИВ ТЕКСТІВ замість масиву індексів (було [0, 2])
         2
     ),
     new DragDropQuestion(
@@ -209,12 +211,12 @@ const intermediateQuestionsBank = [
             "Серхіо Перес": "Мексика", 
             "Льюїс Гамільтон": "Велика Британія"
         },
-        3 // Більше балів за складне питання
+        3
     ),
     new RadioQuestion(
         "Скільки кіл зазвичай проходить гонка F1, якщо не враховувати особливі випадки?",
         ["До 305 км", "До 250 км", "Мінімум 400 км"],
-        0, // Індекс правильної відповіді: "До 305 км" (або 2 години)
+        "До 305 км", // ТЕКСТ замість індексу (було 0)
         1
     ),
     new DragDropQuestion(
@@ -230,19 +232,18 @@ const intermediateQuestionsBank = [
     new CheckboxQuestion(
         "Які з цих трас приймали Гран-прі F1 (оберіть три)?",
         ["Монца", "Нюрбургринг", "Ле-Ман", "Спа-Франкоршам", "Індіанаполіс"],
-        [0, 1, 3], // Індекси правильних відповідей: "Монца", "Нюрбургринг", "Спа-Франкоршам"
+        ["Монца", "Нюрбургринг", "Спа-Франкоршам"], // МАСИВ ТЕКСТІВ замість масиву індексів (було [0, 1, 3])
         3
     ),
 ];
 
-// Мапа для вибору банку
+// Мапа для вибору банку - БЕЗ ЗМІН
 const questionBanks = {
     // Збільшено count, щоб було більше питань F1
     beginner: { bank: beginnerQuestionsBank, count: 6 }, 
     intermediate: { bank: intermediateQuestionsBank, count: 6 },
     advanced: { bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), count: 12 }, 
 };
-
 
 
 // 3. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ - БЕЗ ЗМІН
@@ -475,3 +476,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+

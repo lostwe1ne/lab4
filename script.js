@@ -1,7 +1,6 @@
 // =================================================================
-//                 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz)
+// 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz) - БЕЗ ЗМІН
 // =================================================================
-
 // Базовий клас для всіх питань (Крок 6)
 class Question {
     constructor(text, options, correct, points = 1) {
@@ -28,6 +27,12 @@ class RadioQuestion extends Question {
     }
 
     checkAnswer(userAnswerIndex) {
+        // У F1-питаннях я використовую рядок для відповіді,
+        // щоб зробити код чистішим і уникнути плутанини з індексами.
+        // Ми порівнюємо, чи збігається текст правильної відповіді з текстом обраного варіанту (userAnswerIndex тут - індекс обраного варіанта)
+        // Для спрощення тестування:
+        // У RadioQuestion correct має бути ІНДЕКС правильної відповіді!
+        // Я коригую це нижче у банку питань для RadioQuestion.
         return this.correct === userAnswerIndex;
     }
 }
@@ -149,43 +154,102 @@ class Quiz {
 
 
 // =================================================================
-//                 2. БАНК ПИТАНЬ (Крок 8)
+// 2. БАНК ПИТАНЬ - ПОВНІСТЮ ЗМІНЕНО НА F1 (Крок 8)
+// *Зверніть увагу: правильна відповідь для RadioQuestion - це ІНДЕКС (0, 1, 2, 3), а не текст.
 // =================================================================
-
 const beginnerQuestionsBank = [
-    new RadioQuestion("Яке ключове слово використовується для оголошення змінної, значення якої не може бути змінено?", ["var", "let", "const", "static"], 2, 1),
-    new RadioQuestion("Який метод DOM використовується для вибору елемента за його унікальним ID?", ["document.querySelector()", "document.getElementsByTagName()", "document.getElementById()", "document.findId()"], 2, 1),
-    new CheckboxQuestion("Які з цих подій можна обробити в DOM (оберіть дві правильні)?", ["onclick", "onready", "onmouseover", "onhtmlparsed"], [0, 2], 2), 
-    new RadioQuestion("Як правильно підключити зовнішній файл JavaScript?", ["<script url='script.js'>", "<script src='script.js'>", "<link rel='script' href='script.js'>"], 1, 1),
-    new CheckboxQuestion("Які типи даних є примітивними в JS (оберіть два)?", ["Object", "String", "Array", "Boolean"], [1, 3], 2),
+    // Питання про F1/Ферстаппена (Початковий Рівень)
+    new RadioQuestion(
+        "Яка команда є поточною (2024) командою Макса Ферстаппена?",
+        ["Ferrari", "Red Bull Racing", "Mercedes", "Aston Martin"],
+        1 // Індекс правильної відповіді: "Red Bull Racing"
+    ),
+    new RadioQuestion(
+        "У якому році Макс Ферстаппен вперше став Чемпіоном Світу F1?",
+        ["2020", "2021", "2022", "2019"],
+        1 // Індекс правильної відповіді: "2021"
+    ),
+    new RadioQuestion(
+        "Який гоночний номер використовує Макс Ферстаппен у Формулі-1?",
+        ["33", "1", "10", "44"],
+        1 // Індекс правильної відповіді: "1" (як чинний чемпіон)
+    ),
+    new RadioQuestion(
+        "Який тип шин зазвичай використовується для їзди по мокрій трасі?",
+        ["Soft", "Medium", "Hard", "Wet"],
+        3 // Індекс правильної відповіді: "Wet"
+    ),
+    new RadioQuestion(
+        "Який елемент автомобіля F1 відкривається за допомогою DRS?",
+        ["Переднє крило", "Заднє крило", "Бортові понтони", "Дифузор"],
+        1 // Індекс правильної відповіді: "Заднє крило"
+    ),
+    new RadioQuestion(
+        "Скільки пілотів стартує у гонці Формули-1 (при повній сітці)?",
+        ["18", "20", "22", "24"],
+        1 // Індекс правильної відповіді: "20"
+    ),
 ];
 
 const intermediateQuestionsBank = [
+    // Питання про F1/Ферстаппена (Середній Рівень)
+    new CheckboxQuestion(
+        "Які з цих подій відбуваються під час Гран-прі F1 (оберіть дві правильні)?",
+        ["Вільна практика", "Супербоул", "Кваліфікація", "Спринтерська гонка"],
+        [0, 2], // Індекси правильних відповідей: "Вільна практика", "Кваліфікація"
+        2
+    ),
+    new CheckboxQuestion(
+        "Які з цих команд є постачальниками двигунів для F1 (оберіть дві правильні)?",
+        ["Mercedes", "Lamborghini", "Ferrari", "Toyota"],
+        [0, 2], // Індекси правильних відповідей: "Mercedes", "Ferrari"
+        2
+    ),
     new DragDropQuestion(
-        "Перетягніть метод JS до його опису.",
-        ["addEventListener", "querySelector", "setItem", "removeItem"],
+        "З'єднайте пілота з його національністю (Балів: 3)",
+        ["Макс Ферстаппен", "Серхіо Перес", "Льюїс Гамільтон"],
         { 
-            "addEventListener": "Прив'язка події", 
-            "querySelector": "Вибір елемента", 
-            "setItem": "Збереження у LocalStorage",
-            "removeItem": "Видалення з LocalStorage"
+            "Макс Ферстаппен": "Нідерланди", 
+            "Серхіо Перес": "Мексика", 
+            "Льюїс Гамільтон": "Велика Британія"
         },
         3 // Більше балів за складне питання
     ),
-    new RadioQuestion("Що повертає виклик `typeof null` в JavaScript?", ["null", "object", "undefined", "number"], 1, 1),
-    new CheckboxQuestion("Які значення вважаються 'falsy' (логічно хибними) в JavaScript (оберіть три)?", ["1", "0", "null", "[]", "undefined"], [1, 2, 4], 3),
+    new RadioQuestion(
+        "Скільки кіл зазвичай проходить гонка F1, якщо не враховувати особливі випадки?",
+        ["До 305 км", "До 250 км", "Мінімум 400 км"],
+        0, // Індекс правильної відповіді: "До 305 км" (або 2 години)
+        1
+    ),
+    new DragDropQuestion(
+        "Перетягніть команду до її логотипу (уявно) (Балів: 3)",
+        ["McLaren", "Alpine", "Visa Cash App RB F1 Team"],
+        { 
+            "McLaren": "Помаранчевий/Чорний", 
+            "Alpine": "Синій/Рожевий", 
+            "Visa Cash App RB F1 Team": "Синій/Червоний"
+        },
+        3
+    ),
+    new CheckboxQuestion(
+        "Які з цих трас приймали Гран-прі F1 (оберіть три)?",
+        ["Монца", "Нюрбургринг", "Ле-Ман", "Спа-Франкоршам", "Індіанаполіс"],
+        [0, 1, 3], // Індекси правильних відповідей: "Монца", "Нюрбургринг", "Спа-Франкоршам"
+        3
+    ),
 ];
 
 // Мапа для вибору банку
 const questionBanks = {
-    beginner: { bank: beginnerQuestionsBank, count: 5 }, // Зменшено кількість для тестування
-    intermediate: { bank: intermediateQuestionsBank, count: 5 },
-    advanced: { bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), count: 10 }, 
+    // Збільшено count, щоб було більше питань F1
+    beginner: { bank: beginnerQuestionsBank, count: 6 }, 
+    intermediate: { bank: intermediateQuestionsBank, count: 6 },
+    advanced: { bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), count: 12 }, 
 };
 
 
 // =================================================================
-//                 3. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ
+// 3. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ - БЕЗ ЗМІН
 // =================================================================
 
 let currentQuiz = null; 
@@ -227,6 +291,8 @@ function renderQuiz(quiz) {
             
             // 2. Зони для скидання (Droppables)
             let droppableAreasHtml = '';
+            // question.correct - це об'єкт { 'Елемент': 'Зона' }
+            // Нам потрібні лише унікальні назви зон
             const slotNames = new Set(Object.values(question.correct)); 
             
             slotNames.forEach(slotName => {
@@ -289,7 +355,7 @@ function showResults(score) {
 
 
 // =================================================================
-//                 4. ЛОГІКА DRAG & DROP API (Крок 10)
+// 4. ЛОГІКА DRAG & DROP API (Крок 10) - БЕЗ ЗМІН
 // =================================================================
 
 let draggedItem = null; // Глобальна змінна для елемента, що перетягується
@@ -359,7 +425,7 @@ function initializeDragAndDrop() {
 
 
 // =================================================================
-//                 5. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ (Крок 10, 13)
+// 5. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ (Крок 10, 13) - БЕЗ ЗМІН
 // =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -416,4 +482,5 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('start-form').reset();
     });
+
 });

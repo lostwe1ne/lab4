@@ -604,8 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 1. Обробка форми початку тесту (з валідацією)
     startForm.addEventListener('submit', function(event) {
-        **event.preventDefault();** // 🔥 Ключовий крок: Скасовуємо стандартну поведінку submit форми
-        
+         event.preventDefault(); // <-- блокуємо стандартну відправку форми
+       
         // Валідація форми
         if (!startForm.checkValidity()) {
              document.getElementById('error-message').textContent = "Будь ласка, заповніть коректно всі поля.";

@@ -1,6 +1,4 @@
-// =================================================================
 // 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz) - БЕЗ ЗМІН
-// =================================================================
 // Базовий клас для всіх питань (Крок 6)
 class Question {
     constructor(text, options, correct, points = 1) {
@@ -153,14 +151,12 @@ class Quiz {
 }
 
 
-// =================================================================
 // 2. БАНК ПИТАНЬ - ПОВНІСТЮ ЗМІНЕНО НА F1 (Крок 8)
 // *Зверніть увагу: правильна відповідь для RadioQuestion - це ІНДЕКС (0, 1, 2, 3), а не текст.
-// =================================================================
 const beginnerQuestionsBank = [
     // Питання про F1/Ферстаппена (Початковий Рівень)
     new RadioQuestion(
-        "Яка команда є поточною (2024) командою Макса Ферстаппена?",
+        "Яка команда є поточною (2025) командою Макса Ферстаппена?",
         ["Ferrari", "Red Bull Racing", "Mercedes", "Aston Martin"],
         1 // Індекс правильної відповіді: "Red Bull Racing"
     ),
@@ -248,13 +244,12 @@ const questionBanks = {
 };
 
 
-// =================================================================
+
 // 3. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ - БЕЗ ЗМІН
-// =================================================================
 
 let currentQuiz = null; 
 
-// --- 3.1 Функція для відображення питань ---
+// 3.1 Функція для відображення питань 
 function renderQuiz(quiz) {
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
@@ -328,7 +323,7 @@ function renderQuiz(quiz) {
     document.getElementById('submit-quiz').disabled = false;
 }
 
-// --- 3.2 Функція для відображення результатів ---
+//  3.2 Функція для відображення результатів 
 function showResults(score) {
     document.getElementById('quiz-screen').classList.add('hidden');
     const resultsScreen = document.getElementById('results-screen');
@@ -354,9 +349,7 @@ function showResults(score) {
 }
 
 
-// =================================================================
 // 4. ЛОГІКА DRAG & DROP API (Крок 10) - БЕЗ ЗМІН
-// =================================================================
 
 let draggedItem = null; // Глобальна змінна для елемента, що перетягується
 
@@ -424,9 +417,7 @@ function initializeDragAndDrop() {
 }
 
 
-// =================================================================
 // 5. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ (Крок 10, 13) - БЕЗ ЗМІН
-// =================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     const startForm = document.getElementById('start-form');

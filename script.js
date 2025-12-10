@@ -1,33 +1,32 @@
 // 1. КЛАСИ ДЛЯ ТЕСТУ (Question, Quiz)
-// Базовий клас для всіх питань (Крок 6)
+// Базовий клас для всіх питань
 class Question {
     constructor(text, options, correct, points = 1) {
         this.text = text;
         this.options = options; 
-        this.correct = correct; // Тепер це ТЕКСТ або МАСИВ ТЕКСТІВ для Radio/Checkbox
+        this.correct = correct; // ТЕКСТ або МАСИВ ТЕКСТІВ для Radio/Checkbox
         this.points = points;
     }
 
-    // Метод для перемішування варіантів відповідей (Крок 9)
+    // Метод для перемішування варіантів відповідей 
     shuffleOptions() {
         for (let i = this.options.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [this.options[i], this.options[j]] = [this.options[j], this.options[i]];
         }
-        // УВАГА: Оскільки ми перевіряємо відповідь по ТЕКСТУ, нам не потрібно оновлювати this.correct тут!
     }
 }
 
 // 1.1. Питання з однією правильною відповіддю (Radio buttons)
 class RadioQuestion extends Question {
-    // correctValue - це ТЕКСТ правильної відповіді, а не індекс!
+    // correctValue - це ТЕКСТ правильної відповіді
     constructor(text, options, correctValue, points) {
-        super(text, options, correctValue, points); // this.correct = текст відповіді
+        super(text, options, correctValue, points); 
         this.type = 'radio';
     }
 
     checkAnswer(userAnswerIndex) {
-        // Тепер ми перевіряємо, чи текст за обраним індексом відповідає правильному тексту.
+        // Порівнюємо ТЕКСТ обраного варіанту з правильним ТЕКСТОМ
         const selectedOptionText = this.options[userAnswerIndex];
         return this.correct === selectedOptionText;
     }
@@ -35,9 +34,9 @@ class RadioQuestion extends Question {
 
 // 1.2. Питання з множинним вибором (Checkbox)
 class CheckboxQuestion extends Question {
-    // correctValues - це МАСИВ ТЕКСТІВ правильних відповідей!
+    // correctValues - це МАСИВ ТЕКСТІВ правильних відповідей
     constructor(text, options, correctValues, points) {
-        super(text, options, correctValues, points); // this.correct = масив текстів
+        super(text, options, correctValues, points); 
         this.type = 'checkbox';
     }
 
@@ -59,7 +58,7 @@ class CheckboxQuestion extends Question {
     }
 }
 
-// 1.3. Питання Drag & Drop (Крок 6, 10) - БЕЗ ЗМІН
+// 1.3. Питання Drag & Drop 
 class DragDropQuestion extends Question {
     constructor(text, draggableItems, correctMapping, points) {
         // correctMapping: об'єкт { 'Текст елемента': 'Назва зони' }
@@ -87,7 +86,7 @@ class DragDropQuestion extends Question {
 }
 
 
-// Клас для управління тестом (Крок 7) - БЕЗ ЗМІН
+// Клас для управління тестом 
 class Quiz {
     constructor(questions, name, group) {
         this.name = name;
@@ -97,9 +96,10 @@ class Quiz {
         this.maxScore = this.questions.reduce((sum, q) => sum + q.points, 0);
     }
     
-    // Перемішуємо питання всього тесту та його варіанти (Крок 9)
+    // Перемішуємо питання всього тесту та його варіанти 
     static selectRandomQuestions(bank, count) {
         const shuffled = bank.sort(() => 0.5 - Math.random());
+        // Обмеження до count
         const selected = shuffled.slice(0, count);
         selected.forEach(q => {
              q.shuffleOptions(); 
@@ -107,7 +107,7 @@ class Quiz {
         return selected;
     }
 
-    // Перевірити всі відповіді та підрахувати бали (Крок 11) - БЕЗ ЗМІН ЛОГІКИ, ТІЛЬКИ ЧЕРЕЗ ВИКЛИК checkAnswer
+    // Перевірити всі відповіді та підрахувати бали
     calculateScore() {
         this.score = 0;
         const container = document.getElementById('questions-container');
@@ -154,53 +154,73 @@ class Quiz {
 }
 
 
-// 2. БАНК ПИТАНЬ - ОНОВЛЕНО ДЛЯ ВИКОРИСТАННЯ ТЕКСТУ ВІДПОВІДІ
+// 2. БАНК ПИТАНЬ - 10 початкових та 10 середніх (разом 20)
 const beginnerQuestionsBank = [
-    // Питання про F1/Ферстаппена (Початковий Рівень)
+    // 10 ПИТАНЬ ПОЧАТКОВОГО РІВНЯ
     new RadioQuestion(
         "Яка команда є поточною (2025) командою Макса Ферстаппена?",
         ["Ferrari", "Red Bull Racing", "Mercedes", "Aston Martin"],
-        "Red Bull Racing" // ТЕКСТ замість індексу (було 1)
+        "Red Bull Racing"
     ),
     new RadioQuestion(
         "У якому році Макс Ферстаппен вперше став Чемпіоном Світу F1?",
         ["2020", "2021", "2022", "2019"],
-        "2021" // ТЕКСТ замість індексу (було 1)
+        "2021"
     ),
     new RadioQuestion(
         "Який гоночний номер використовує Макс Ферстаппен у Формулі-1?",
         ["33", "1", "10", "44"],
-        "1" // ТЕКСТ замість індексу (було 1)
+        "1"
     ),
     new RadioQuestion(
         "Який тип шин зазвичай використовується для їзди по мокрій трасі?",
         ["Soft", "Medium", "Hard", "Wet"],
-        "Wet" // ТЕКСТ замість індексу (було 3)
+        "Wet"
     ),
     new RadioQuestion(
         "Який елемент автомобіля F1 відкривається за допомогою DRS?",
         ["Переднє крило", "Заднє крило", "Бортові понтони", "Дифузор"],
-        "Заднє крило" // ТЕКСТ замість індексу (було 1)
+        "Заднє крило"
     ),
     new RadioQuestion(
         "Скільки пілотів стартує у гонці Формули-1 (при повній сітці)?",
         ["18", "20", "22", "24"],
-        "20" // ТЕКСТ замість індексу (було 1)
+        "20"
+    ),
+    new RadioQuestion(
+        "Який гонщик є рекордсменом за кількістю Чемпіонатів Світу F1?",
+        ["Міхаель Шумахер", "Льюїс Гамільтон", "Айртон Сенна", "Себастьян Феттель"],
+        "Льюїс Гамільтон"
+    ),
+    new RadioQuestion(
+        "Який прапор показують, коли на трасі є серйозна небезпека і виїжджає машина безпеки?",
+        ["Червоний", "Синій", "Жовтий", "Зелений"],
+        "Жовтий"
+    ),
+    new RadioQuestion(
+        "Як називається зона, де команди змінюють колеса під час гонки?",
+        ["Гараж", "Бокси", "Піт-лейн", "Стійло"],
+        "Піт-лейн"
+    ),
+    new RadioQuestion(
+        "Яке місто приймає знаменитий Гран-прі Монако?",
+        ["Ніцца", "Монте-Карло", "Канни", "Париж"],
+        "Монте-Карло"
     ),
 ];
 
 const intermediateQuestionsBank = [
-    // Питання про F1/Ферстаппена (Середній Рівень)
+    // 10 ПИТАНЬ СЕРЕДНЬОГО/СКЛАДНОГО РІВНЯ
     new CheckboxQuestion(
         "Які з цих подій відбуваються під час Гран-прі F1 (оберіть дві правильні)?",
         ["Вільна практика", "Супербоул", "Кваліфікація", "Спринтерська гонка"],
-        ["Вільна практика", "Кваліфікація"], // МАСИВ ТЕКСТІВ замість масиву індексів (було [0, 2])
+        ["Вільна практика", "Кваліфікація"],
         2
     ),
     new CheckboxQuestion(
         "Які з цих команд є постачальниками двигунів для F1 (оберіть дві правильні)?",
         ["Mercedes", "Lamborghini", "Ferrari", "Toyota"],
-        ["Mercedes", "Ferrari"], // МАСИВ ТЕКСТІВ замість масиву індексів (було [0, 2])
+        ["Mercedes", "Ferrari"],
         2
     ),
     new DragDropQuestion(
@@ -216,7 +236,7 @@ const intermediateQuestionsBank = [
     new RadioQuestion(
         "Скільки кіл зазвичай проходить гонка F1, якщо не враховувати особливі випадки?",
         ["До 305 км", "До 250 км", "Мінімум 400 км"],
-        "До 305 км", // ТЕКСТ замість індексу (було 0)
+        "До 305 км",
         1
     ),
     new DragDropQuestion(
@@ -232,25 +252,58 @@ const intermediateQuestionsBank = [
     new CheckboxQuestion(
         "Які з цих трас приймали Гран-прі F1 (оберіть три)?",
         ["Монца", "Нюрбургринг", "Ле-Ман", "Спа-Франкоршам", "Індіанаполіс"],
-        ["Монца", "Нюрбургринг", "Спа-Франкоршам"], // МАСИВ ТЕКСТІВ замість масиву індексів (було [0, 1, 3])
+        ["Монца", "Нюрбургринг", "Спа-Франкоршам"],
         3
+    ),
+    new CheckboxQuestion(
+        "Які частини автомобіля F1 мають вирішальне значення для генерації притискної сили (downforce)? (Оберіть три правильні)",
+        ["Переднє крило", "Бічні дзеркала", "Заднє крило", "Вихлопні труби", "Дифузор"],
+        ["Переднє крило", "Заднє крило", "Дифузор"], 
+        3
+    ),
+    new DragDropQuestion(
+        "З'єднайте назву відомого повороту з трасою (Балів: 3)",
+        ["Eau Rouge", "Tamburello", "Maggotts/Becketts"],
+        { 
+            "Eau Rouge": "Спа-Франкоршам", 
+            "Tamburello": "Імола", 
+            "Maggotts/Becketts": "Сільверстоун"
+        },
+        3
+    ),
+    new RadioQuestion(
+        "Що означає абревіатура MGU-H у силових установках F1?",
+        ["Motor Gear Unit – Hydrolics", "Mechanical Grip Unit – Handling", "Motor Generator Unit – Heat", "Magnetic Gear Unit – Hybrid"],
+        "Motor Generator Unit – Heat",
+        1
+    ),
+    new CheckboxQuestion(
+        "Хто з цих пілотів був напарником Макса Ферстаппена в Red Bull Racing? (Оберіть дві правильні)",
+        ["Серхіо Перес", "Карлос Сайнс-молодший", "Даніель Ріккардо", "П'єр Гаслі"],
+        ["Серхіо Перес", "Даніель Ріккардо"],
+        2
     ),
 ];
 
-// Мапа для вибору банку - БЕЗ ЗМІН
+// 3. Мапа для вибору банку - ОНОВЛЕНО count до 10 ВЕЗДЕ
 const questionBanks = {
-    // Збільшено count, щоб було більше питань F1
+    // Beginner: бере 10 з 10 початкових
     beginner: { bank: beginnerQuestionsBank, count: 10 }, 
-    intermediate: { bank: intermediateQuestionsBank, count: 15 },
-    advanced: { bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), count: 20 }, 
+    // Intermediate: бере 10 з 10 середніх
+    intermediate: { bank: intermediateQuestionsBank, count: 10 },
+    // Advanced: бере 10 ВИПАДКОВИХ з 20 (10 початкових + 10 середніх)
+    advanced: { 
+        bank: beginnerQuestionsBank.concat(intermediateQuestionsBank), 
+        count: 10 
+    }, 
 };
 
 
-// 3. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ - БЕЗ ЗМІН
+// 4. РОБОТА З DOM ТА ОБРОБКА ПОДІЙ - БЕЗ ЗМІН
 
 let currentQuiz = null; 
 
-// 3.1 Функція для відображення питань 
+// 4.1 Функція для відображення питань 
 function renderQuiz(quiz) {
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
@@ -287,8 +340,6 @@ function renderQuiz(quiz) {
             
             // 2. Зони для скидання (Droppables)
             let droppableAreasHtml = '';
-            // question.correct - це об'єкт { 'Елемент': 'Зона' }
-            // Нам потрібні лише унікальні назви зон
             const slotNames = new Set(Object.values(question.correct)); 
             
             slotNames.forEach(slotName => {
@@ -324,7 +375,7 @@ function renderQuiz(quiz) {
     document.getElementById('submit-quiz').disabled = false;
 }
 
-//  3.2 Функція для відображення результатів 
+//  4.2 Функція для відображення результатів 
 function showResults(score) {
     document.getElementById('quiz-screen').classList.add('hidden');
     const resultsScreen = document.getElementById('results-screen');
@@ -350,7 +401,7 @@ function showResults(score) {
 }
 
 
-// 4. ЛОГІКА DRAG & DROP API (Крок 10) - БЕЗ ЗМІН
+// 5. ЛОГІКА DRAG & DROP API - БЕЗ ЗМІН
 
 let draggedItem = null; // Глобальна змінна для елемента, що перетягується
 
@@ -418,7 +469,7 @@ function initializeDragAndDrop() {
 }
 
 
-// 5. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ (Крок 10, 13) - БЕЗ ЗМІН
+// 6. ІНІЦІАЛІЗАЦІЯ ТА ОСНОВНІ ПОДІЇ - БЕЗ ЗМІН
 
 document.addEventListener('DOMContentLoaded', () => {
     const startForm = document.getElementById('start-form');
@@ -476,5 +527,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
-
-

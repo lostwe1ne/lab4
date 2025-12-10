@@ -20,7 +20,7 @@
   --shadow-strong: 0 0 40px rgba(0,0,0,0.7);
 }
 
-/* ====== Base / Mobile-first (Базові стилі для вузьких екранів) ====== */
+/* Base / Mobile-first (Базові стилі для вузьких екранів) */
 * { box-sizing: border-box }
 html, body { height: 100% }
 
@@ -61,7 +61,7 @@ h3 { font-size: 1rem; color: var(--muted); margin: 12px 0 }
 hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 20px 0 }
 
 
-/* ====== Header (FLEX 1) + CSS Burger Menu (Mobile-first) ====== */
+/* Header (FLEX 1) + CSS Burger Menu (Mobile-first) */
 header { background: var(--black); position: sticky; top: 0; z-index: 1200; box-shadow: 0 4px 14px rgba(255,0,0,0.12) }
 
 /* header inner flex container */
@@ -122,7 +122,7 @@ header { background: var(--black); position: sticky; top: 0; z-index: 1200; box-
 .nav-toggle:checked ~ .burger span:nth-child(3) { transform: translateY(-9px) rotate(-45deg) }
 
 
-/* ====== Hero ====== */
+/* Hero */
 .hero { text-align: center; padding: 28px 8px 36px }
 .hero h2 { font-size: 1.1rem; margin-bottom: 12px }
 .hero-image { 
@@ -136,7 +136,7 @@ header { background: var(--black); position: sticky; top: 0; z-index: 1200; box-
     border: 4px solid var(--accent) 
 }
 
-/* ====== Biography / Адаптив Float-зображень (Mobile-first: no float) ====== */
+/* Biography / Адаптив Float-зображень (Mobile-first: no float) */
 .bio-section { padding: 8px 0; }
 
 /* На мобілці float-блоки займають 100% ширини і центруються */
@@ -154,7 +154,7 @@ header { background: var(--black); position: sticky; top: 0; z-index: 1200; box-
 .float-left-img figcaption, .float-right-img figcaption { padding: 8px; text-align: center; }
 
 
-/* ====== Table responsiveness (Прокрутка) ====== */
+/* Table responsiveness (Прокрутка */
 .table-scroll-wrapper {
   width: 100%;
   display: block;
@@ -179,7 +179,7 @@ table th { background: var(--accent); color: var(--white); font-weight: 600 }
 .champion-row { font-weight: 700; background: rgba(255,0,0,0.12) }
 
 
-/* ====== Photo gallery (GRID 1) ====== */
+/* Photo gallery (GRID 1) */
 .photo-gallery {
   display: grid;
   /* Адаптивна сітка: 1 колонка на мобілці, потім auto-fit */
@@ -197,7 +197,7 @@ table th { background: var(--accent); color: var(--white); font-weight: 600 }
 .gallery-item:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(255,0,0,0.08) }
 
 
-/* ====== Contact form (FLEX 2) ====== */
+/* Contact form (FLEX 2) */
 .contact-form {
   display: flex;
   flex-direction: column; /* mobile: stacked (одна колонка) */
@@ -284,7 +284,7 @@ footer {
 footer p { margin: 4px 0 }
 
 
-/* ====== MEDIA QUERIES (Адаптивність) ====== */
+/* MEDIA QUERIES (Адаптивність) */
 
 /* 1. Планшет (Tablet) та більше (600px+) */
 @media (min-width: 600px) {
@@ -353,9 +353,7 @@ footer p { margin: 4px 0 }
   .float-right-img { width: 180px; }
 }
 
-/* ========================================================= */
 /* ДОДАТКОВІ СТИЛІ ДЛЯ ЛАБОРАТОРНОЇ №4: Тест */
-/* ========================================================= */
 
 /* 1. Стилі для прихованих секцій та загального оформлення */
 .hidden {
